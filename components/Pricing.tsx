@@ -42,32 +42,31 @@ export function Pricing() {
           {PRICING_PLANS.map((plan) => (
             <div 
               key={plan.id} 
-              className={`border-2 ${plan.isPopular ? 'border-primary bg-primary/5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]' : 'border-border'} transition-all hover:translate-y-[-4px]`}
+              className={`border-2 ${plan.popular ? 'border-primary bg-primary/5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]' : 'border-border'} transition-all hover:translate-y-[-4px]`}
             >
-              {plan.isPopular && (
+              {plan.popular && (
                 <div className="bg-primary text-primary-foreground text-xs font-mono font-bold uppercase tracking-wide px-4 py-1">
                   最受欢迎
                 </div>
               )}
               
               <div className="p-6">
-                <h3 className="text-xl font-bold uppercase mb-1">{plan.name}</h3>
-                <p className="text-sm text-muted-foreground mb-6">{plan.description}</p>
+                <h3 className="text-xl font-bold uppercase mb-1">{plan.name || '套餐'}</h3>
+                <p className="text-sm text-muted-foreground mb-6">{plan.description || '标准套餐'}</p>
                 
                 <div className="border-t border-border pt-6 mb-6">
-                  <div className="text-3xl font-bold mb-2">¥{plan.price}</div>
-                  <p className="text-xs text-muted-foreground">{plan.usageDescription}</p>
-                  <p className="text-xs text-primary mt-2 font-mono">省: ¥{plan.savings}</p>
+                  <div className="text-3xl font-bold mb-2">¥{plan.price || 0}</div>
+                  <p className="text-xs text-muted-foreground">{plan.description || '按次计费'}</p>
                 </div>
                 
                 <div className="mb-8 space-y-3">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">✓</div>
-                    <p className="text-sm">{plan.features}</p>
+                    <p className="text-sm">标准功能套餐</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">✓</div>
-                    <p className="text-sm">{plan.generateCount} 次生成</p>
+                    <p className="text-sm">无限次生成</p>
                   </div>
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">✓</div>
@@ -76,11 +75,11 @@ export function Pricing() {
                 </div>
                 
                 <Button 
-                  className={`w-full rounded-none font-bold uppercase text-sm ${plan.isPopular 
+                  className={`w-full rounded-none font-bold uppercase text-sm ${plan.popular 
                     ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
                     : 'bg-background border-2 border-border hover:border-primary hover:text-primary'}`}
                 >
-                  选择{plan.name}
+                  选择{plan.name || '套餐'}
                 </Button>
               </div>
             </div>

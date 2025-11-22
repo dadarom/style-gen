@@ -1,7 +1,7 @@
 // Footer组件 - 页脚导航和品牌信息
 'use client'
 import React from 'react';
-import Link from 'next/link';
+import { Link, Text, Container, Card } from './atom';
 
 export function Footer() {
   // 临时使用硬编码的数据
@@ -61,13 +61,10 @@ export function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           {/* 品牌信息 */}
           <div className="md:col-span-1">
-            <Link href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-primary flex items-center justify-center font-bold text-primary-foreground text-xl">
-                S
-              </div>
+            <a href="/" className="flex items-center gap-2 mb-6">
+              <div className="w-10 h-10 bg-primary flex items-center justify-center font-bold text-primary-foreground text-xl">S</div>
               <span className="font-black text-xl uppercase tracking-tighter">StyleGen</span>
-            </Link>
-            
+            </a>
             <p className="text-sm text-muted-foreground mb-6">
               AI风格生成器，为您的照片带来专业级艺术效果。
               简单易用，高质量输出。
@@ -76,7 +73,7 @@ export function Footer() {
             {/* 社交媒体链接 */}
             <div className="flex gap-4">
               {socialLinks.map((social) => (
-                <Link
+                <a
                   key={social.id}
                   href={social.url}
                   target="_blank"
@@ -85,7 +82,7 @@ export function Footer() {
                   aria-label={social.label}
                 >
                   {social.icon}
-                </Link>
+                </a>
               ))}
             </div>
           </div>
@@ -93,20 +90,20 @@ export function Footer() {
           {/* 导航链接分组 */}
           {footerLinks.map((group) => (
             <div key={group.id}>
-              <h3 className="font-bold font-mono text-xs uppercase mb-4 border-b border-border pb-2 inline-block">
-                {group.title}
-              </h3>
+              <Text size="xs" font="mono" weight="bold" uppercase className="mb-4 border-b border-border pb-2 inline-block">
+              {group.title}
+            </Text>
               <ul className="space-y-3">
                 {group.links.map((link) => (
-                  <li key={link.id}>
-                    <Link
-                      href={link.url}
-                      className="text-sm text-muted-foreground hover:text-foreground transition-colors font-mono"
-                    >
-                      {link.label}
-                    </Link>
-                  </li>
-                ))}
+                <li key={link.id}>
+                  <a
+                    href={link.url}
+                    className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    {link.label}
+                  </a>
+                </li>
+              ))}
               </ul>
             </div>
           ))}
@@ -116,19 +113,19 @@ export function Footer() {
         <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
           <div className="flex gap-6 mb-6 md:mb-0 overflow-x-auto pb-2 scrollbar-hide">
             {navigationLinks.map((link) => (
-              <Link
-                key={link.id}
-                href={link.url}
-                className="text-xs font-mono whitespace-nowrap hover:text-primary transition-colors"
-              >
-                {link.label}
-              </Link>
-            ))}
+          <a
+            key={link.id}
+            href={link.url}
+            className="text-xs font-mono whitespace-nowrap hover:text-primary transition-colors"
+          >
+            {link.label}
+          </a>
+        ))}
           </div>
           
-          <div className="text-xs text-muted-foreground font-mono">
+          <Text size="xs" color="muted" font="mono">
             &copy; {new Date().getFullYear()} StyleGen AI. All rights reserved.
-          </div>
+          </Text>
         </div>
         
         {/* 价格提示 */}
