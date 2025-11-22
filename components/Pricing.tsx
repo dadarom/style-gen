@@ -7,8 +7,8 @@ export function Pricing() {
   return (
     <section className="py-20 px-4 bg-background/50">
       <div className="max-w-6xl mx-auto">
-        <div className="text-center mb-16">
-          <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-6">
+        <div className="text-center mb-16 mt-10">
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-6 mt-8">
             简单透明的 <span className="text-primary">定价</span>
           </h2>
           <p className="max-w-2xl mx-auto text-muted-foreground">
@@ -18,18 +18,18 @@ export function Pricing() {
 
         {/* 单次生成 */}
         <div className="mb-16">
-          <div className="border-2 border-primary bg-primary/5 p-6 rounded-none">
-            <div className="flex flex-col md:flex-row justify-between items-center gap-6">
+          <div className="border-2 border-primary bg-primary/5 p-8 rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)] transition-all hover:translate-y-[-2px]">
+            <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div>
                 <h3 className="text-xl font-bold uppercase mb-2">单次生成</h3>
                 <p className="text-sm text-muted-foreground">适合偶尔使用的用户，按次付费无压力</p>
               </div>
               <div className="text-center md:text-right">
-                <div className="text-3xl font-bold mb-2">¥{SINGLE_PRICE}</div>
-                <p className="text-xs text-muted-foreground">/ 次</p>
+                <div className="text-4xl font-black mb-2">¥{SINGLE_PRICE}</div>
+                <p className="text-xs text-muted-foreground uppercase tracking-wider">/ 次</p>
               </div>
               <div>
-                <Button className="rounded-none bg-primary text-primary-foreground font-bold uppercase text-sm hover:bg-primary/90 border-2 border-transparent hover:border-primary">
+                <Button className="rounded-none bg-primary text-primary-foreground font-bold uppercase text-sm px-8 py-3 hover:bg-primary/90 border-2 border-transparent hover:border-primary transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]">
                   立即购买
                 </Button>
               </div>
@@ -38,11 +38,11 @@ export function Pricing() {
         </div>
 
         {/* 套餐优惠 */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PRICING_PLANS.map((plan) => (
             <div 
               key={plan.id} 
-              className={`border-2 ${plan.popular ? 'border-primary bg-primary/5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]' : 'border-border'} transition-all hover:translate-y-[-4px]`}
+              className={`border-2 ${plan.popular ? 'border-primary bg-primary/5 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]' : 'border-border'} transition-all hover:translate-y-[-4px] h-full flex flex-col`}
             >
               {plan.popular && (
                 <div className="bg-primary text-primary-foreground text-xs font-mono font-bold uppercase tracking-wide px-4 py-1">
@@ -50,7 +50,7 @@ export function Pricing() {
                 </div>
               )}
               
-              <div className="p-6">
+              <div className="p-6 flex flex-col h-full">
                 <h3 className="text-xl font-bold uppercase mb-1">{plan.name || '套餐'}</h3>
                 <p className="text-sm text-muted-foreground mb-6">{plan.description || '标准套餐'}</p>
                 
@@ -59,7 +59,7 @@ export function Pricing() {
                   <p className="text-xs text-muted-foreground">{plan.description || '按次计费'}</p>
                 </div>
                 
-                <div className="mb-8 space-y-3">
+                <div className="mb-8 space-y-3 flex-grow">
                   <div className="flex items-start gap-3">
                     <div className="mt-1 w-4 h-4 bg-primary text-primary-foreground flex items-center justify-center font-bold text-xs">✓</div>
                     <p className="text-sm">标准功能套餐</p>

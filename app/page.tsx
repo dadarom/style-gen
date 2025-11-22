@@ -8,9 +8,15 @@ export default function Home() {
   return (
     <>
       <Header />
-      <Hero />
-      <Workflow />
-      <Pricing />
+      <section id="hero">
+        <Hero />
+      </section>
+      <section id="workflow">
+        <Workflow />
+      </section>
+      <section id="pricing">
+        <Pricing />
+      </section>
       <Footer />
     </>
   )

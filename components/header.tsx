@@ -1,13 +1,68 @@
+"use client"
+import { useState, useEffect } from 'react';
 import { Button, Link, Text, Container } from './atom';
 
 // 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
+  // 更新导航链接为锚点链接
   const navigationLinks = [
-    { id: 'features', label: '功能', href: '/features' },
-    { id: 'pricing', label: '价格', href: '/pricing' },
-    { id: 'examples', label: '示例', href: '/examples' },
+    { id: 'hero', label: '首页', href: '#hero' },
+    { id: 'workflow', label: '功能', href: '#workflow' },
+    { id: 'pricing', label: '价格', href: '#pricing' },
     { id: 'docs', label: '文档', href: '/docs' },
   ];
+
+  // 当前激活的导航项ID
+  const [activeSection, setActiveSection] = useState('hero');
+
+  // 处理滚动事件，更新当前激活的导航项
+  const handleScroll = () => {
+    const scrollPosition = window.scrollY + 100; // 添加偏移量
+
+    // 获取所有可滚动的部分
+    const sections = navigationLinks
+      .filter(link => link.href.startsWith('#'))
+      .map(link => link.id);
+
+    // 查找当前在视口中的部分
+    for (const sectionId of sections.reverse()) {
+      const section = document.getElementById(sectionId);
+      if (section && section.offsetTop <= scrollPosition) {
+        setActiveSection(sectionId);
+        break;
+      }
+    }
+  };
+
+  // 处理导航链接点击，实现平滑滚动
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    // 如果是锚点链接
+    if (href.startsWith('#')) {
+      e.preventDefault(); // 阻止默认行为
+      const targetId = href.substring(1);
+      const targetElement = document.getElementById(targetId);
+      
+      if (targetElement) {
+        // 平滑滚动到目标元素
+        targetElement.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        
+        // 更新当前激活的部分
+        setActiveSection(targetId);
+      }
+    }
+  };
+
+  // 添加滚动事件监听
+  useEffect(() => {
+    window.addEventListener('scroll', handleScroll);
+    // 初始化时检查当前位置
+    handleScroll();
+    // 清理函数
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b-2 border-border bg-background/80 backdrop-blur-md">
@@ -28,7 +83,8 @@ export function Header() {
               href={link.href}
               weight="bold"
               font="mono"
-              className="uppercase"
+              className={`uppercase transition-colors ${activeSection === link.id ? 'text-primary' : 'hover:text-primary'}`}
+              onClick={(e) => handleLinkClick(e, link.href)}
             >
               {link.label}
             </Link>

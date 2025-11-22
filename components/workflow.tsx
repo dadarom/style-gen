@@ -128,7 +128,7 @@ export function Workflow() {
               {filteredStyles.map(style => (
                 <div
                   key={style.id}
-                  className={`aspect-square border-2 ${selectedStyle === style.id ? 'border-primary bg-primary/10' : 'border-border'} cursor-pointer overflow-hidden hover:opacity-90 transition-all`}
+                  className={`aspect-square border-2 ${selectedStyle === style.id ? 'border-primary bg-primary/10' : 'border-border'} cursor-pointer overflow-hidden hover:opacity-90 transition-all hover:shadow-[3px_3px_0px_0px_rgba(0,0,0,0.1)] hover:-translate-y-1 hover:border-primary`}
                   onClick={() => setSelectedStyle(style.id)}
                 >
                   <div className="w-full h-full relative">
@@ -138,7 +138,7 @@ export function Workflow() {
                       className="w-full h-full object-cover"
                     />
                     <div className="absolute bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm p-2">
-                      <p className="text-xs font-bold font-mono">{style.name}</p>
+                      <p className="text-xs font-bold font-mono uppercase hover:text-primary transition-colors">{style.name}</p>
                     </div>
                   </div>
                 </div>
@@ -250,7 +250,7 @@ export function Workflow() {
   return (
     <section id="generator" className="py-16 px-4 bg-background/50">
       <div className="max-w-5xl mx-auto">
-        <div className="mb-12 text-center">
+        <div className="mb-12 text-center mt-10">
           <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-6">
             <span className="text-primary">AI</span> 风格生成器
           </h2>
@@ -265,15 +265,9 @@ export function Workflow() {
             {WORKFLOW_STEPS.map((workflowStep) => (
               <React.Fragment key={workflowStep.id}>
                 <div 
-                  className={`flex flex-col items-center relative z-10 ${
-                    step >= workflowStep.id ? 'text-primary' : 'text-muted-foreground'
-                  }`}
+                  className={`flex flex-col items-center relative z-10 ${step >= workflowStep.id ? 'text-primary' : 'text-muted-foreground'} hover:shadow-sm transition-all`}
                 >
-                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 font-bold font-mono ${
-                    step >= workflowStep.id 
-                      ? 'bg-primary text-primary-foreground' 
-                      : 'bg-background border border-border'
-                  }`}>
+                  <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 font-bold font-mono ${step >= workflowStep.id ? 'bg-primary text-primary-foreground' : 'bg-background border border-border'} transition-all hover:scale-105`}>
                     {workflowStep.id}
                   </div>
                   <p className="text-xs md:text-sm font-mono uppercase font-bold">
@@ -282,9 +276,7 @@ export function Workflow() {
                 </div>
                 
                 {workflowStep.id < WORKFLOW_STEPS.length && (
-                  <div className={`h-1 flex-grow mx-2 ${
-                    step > workflowStep.id ? 'bg-primary' : 'bg-border'
-                  }`}></div>
+                  <div className={`h-1 flex-grow mx-2 ${step > workflowStep.id ? 'bg-primary' : 'bg-border'}`}></div>
                 )}
               </React.Fragment>
             ))}
@@ -292,7 +284,7 @@ export function Workflow() {
         </div>
 
         {/* 步骤内容 */}
-        <div className="bg-background border-2 border-border p-6 md:p-8 mb-8">
+        <div className="bg-background border-2 border-border p-6 md:p-8 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
           {renderStepContent()}
         </div>
 
@@ -303,7 +295,7 @@ export function Workflow() {
               variant="outline"
               onClick={handlePrevious}
               disabled={step === 1}
-              className="rounded-none border-2 border-border font-mono uppercase"
+              className="rounded-none border-2 border-border font-mono uppercase hover:text-primary transition-colors"
             >
               上一步
             </Button>
@@ -314,7 +306,7 @@ export function Workflow() {
               <Button
                 variant="outline"
                 onClick={handleReset}
-                className="rounded-none border-2 border-border font-mono uppercase"
+                className="rounded-none border-2 border-border font-mono uppercase hover:text-primary transition-colors"
               >
                 重新生成
               </Button>
@@ -328,13 +320,13 @@ export function Workflow() {
                   (step === 2 && !selectedStyle) ||
                   loading
                 }
-                className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed"
+                className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90 disabled:opacity-50 disabled:cursor-not-allowed transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
               >
                 {step === 3 ? '开始生成' : '下一步'}
               </Button>
             ) : (
               <Button
-                className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90"
+                className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90 transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
               >
                 下载图片
               </Button>

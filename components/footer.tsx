@@ -1,136 +1,103 @@
 // Footer组件 - 页脚导航和品牌信息
 'use client'
 import React from 'react';
-import { Link, Text, Container, Card } from './atom';
+
+interface FooterLink {
+  id: string;
+  label: string;
+  url: string;
+  englishLabel: string;
+}
+
+interface FooterLinkGroup {
+  id: string;
+  title: string;
+  englishTitle: string;
+  links: FooterLink[];
+}
 
 export function Footer() {
-  // 临时使用硬编码的数据
-  const navigationLinks = [
-    { id: 'home', url: '/', label: '首页' },
-    { id: 'features', url: '/features', label: '功能' },
-    { id: 'pricing', url: '/pricing', label: '价格' },
-    { id: 'examples', url: '/examples', label: '示例' },
-    { id: 'about', url: '/about', label: '关于我们' },
-  ];
-
-  const footerLinks = [
+  const footerLinkGroups: FooterLinkGroup[] = [
     {
       id: 'product',
       title: '产品',
+      englishTitle: 'PRODUCT',
       links: [
-        { id: 'features', label: '功能', url: '/features' },
-        { id: 'pricing', label: '价格', url: '/pricing' },
-        { id: 'examples', label: '示例', url: '/examples' },
+        { id: 'features', label: '功能特性', url: '/features', englishLabel: 'FEATURES' },
+        { id: 'pricing', label: '价格方案', url: '/pricing', englishLabel: 'PRICING' },
+        { id: 'api', label: 'API接入', url: '/api', englishLabel: 'API' },
       ],
     },
     {
-      id: 'company',
-      title: '公司',
+      id: 'resources',
+      title: '资源',
+      englishTitle: 'RESOURCES',
       links: [
-        { id: 'about', label: '关于我们', url: '/about' },
-        { id: 'contact', label: '联系方式', url: '/contact' },
-        { id: 'blog', label: '博客', url: '/blog' },
+        { id: 'docs', label: '开发文档', url: '/docs', englishLabel: 'DOCS' },
+        { id: 'community', label: '社区论坛', url: '/community', englishLabel: 'COMMUNITY' },
+        { id: 'help', label: '帮助中心', url: '/help', englishLabel: 'HELP' },
       ],
     },
     {
-      id: 'support',
-      title: '支持',
+      id: 'legal',
+      title: '法律',
+      englishTitle: 'LEGAL',
       links: [
-        { id: 'docs', label: '文档', url: '/docs' },
-        { id: 'faq', label: '常见问题', url: '/faq' },
-        { id: 'help', label: '帮助中心', url: '/help' },
+        { id: 'privacy', label: '隐私政策', url: '/privacy', englishLabel: 'PRIVACY' },
+        { id: 'terms', label: '服务条款', url: '/terms', englishLabel: 'TERMS' },
       ],
     },
-  ];
-
-  const socialLinks = [
-    { id: 'twitter', url: '#', icon: <span>🐦</span>, label: 'Twitter' },
-    { id: 'github', url: '#', icon: <span>🐙</span>, label: 'GitHub' },
-    { id: 'instagram', url: '#', icon: <span>📸</span>, label: 'Instagram' },
-    { id: 'youtube', url: '#', icon: <span>🎬</span>, label: 'YouTube' },
-  ];
-
-  const singlePrice = 0.3;
-  const pricingPlans = [
-    { name: '基础套餐', price: 9.99 }
   ];
 
   return (
-    <footer className="border-t border-border bg-background/50">
-      <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
+    <footer className="bg-background border-t border-border py-12">
+      <div className="container mx-auto px-4">
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* 品牌信息 */}
-          <div className="md:col-span-1">
-            <a href="/" className="flex items-center gap-2 mb-6">
-              <div className="w-10 h-10 bg-primary flex items-center justify-center font-bold text-primary-foreground text-xl">S</div>
-              <span className="font-black text-xl uppercase tracking-tighter">StyleGen</span>
+          <div className="lg:col-span-1">
+            <a href="/" className="block mb-6">
+              <h2 className="font-black text-2xl uppercase tracking-tight">STYLEGEN.AI</h2>
             </a>
-            <p className="text-sm text-muted-foreground mb-6">
-              AI风格生成器，为您的照片带来专业级艺术效果。
-              简单易用，高质量输出。
+            <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+              赋能创作者的下一代风格迁移技术，让每一次灵感都触手可及。
             </p>
-            
-            {/* 社交媒体链接 */}
-            <div className="flex gap-4">
-              {socialLinks.map((social) => (
-                <a
-                  key={social.id}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="w-10 h-10 flex items-center justify-center border border-border hover:border-primary hover:text-primary transition-colors"
-                  aria-label={social.label}
-                >
-                  {social.icon}
-                </a>
-              ))}
-            </div>
           </div>
           
           {/* 导航链接分组 */}
-          {footerLinks.map((group) => (
-            <div key={group.id}>
-              <Text size="xs" font="mono" weight="bold" uppercase className="mb-4 border-b border-border pb-2 inline-block">
-              {group.title}
-            </Text>
-              <ul className="space-y-3">
-                {group.links.map((link) => (
-                <li key={link.id}>
-                  <a
-                    href={link.url}
-                    className="text-sm font-mono text-muted-foreground hover:text-foreground transition-colors"
-                  >
-                    {link.label}
-                  </a>
-                </li>
-              ))}
-              </ul>
-            </div>
-          ))}
-        </div>
-        
-        {/* 底部信息 */}
-        <div className="mt-12 pt-8 border-t border-border flex flex-col md:flex-row justify-between items-center">
-          <div className="flex gap-6 mb-6 md:mb-0 overflow-x-auto pb-2 scrollbar-hide">
-            {navigationLinks.map((link) => (
-          <a
-            key={link.id}
-            href={link.url}
-            className="text-xs font-mono whitespace-nowrap hover:text-primary transition-colors"
-          >
-            {link.label}
-          </a>
-        ))}
+          <div className="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {footerLinkGroups.map((group) => (
+              <div key={group.id}>
+                <h3 className="text-sm font-bold mb-4 flex items-center gap-2">
+                  <span>|</span>
+                  <span className="text-primary">{group.title} / {group.englishTitle}</span>
+                </h3>
+                <ul className="space-y-3">
+                  {group.links.map((link) => (
+                    <li key={link.id}>
+                      <a
+                        href={link.url}
+                        className="text-sm text-muted-foreground hover:text-primary transition-colors"
+                      >
+                        {link.label} / {link.englishLabel}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
-          
-          <Text size="xs" color="muted" font="mono">
-            &copy; {new Date().getFullYear()} StyleGen AI. All rights reserved.
-          </Text>
         </div>
         
-        {/* 价格提示 */}
-        <div className="mt-8 text-center text-xs font-mono text-muted-foreground border-t border-border pt-6">
-          <p>单次生成价格: <span className="text-primary font-bold">¥{singlePrice}</span> | 套餐起价: <span className="text-primary font-bold">¥{pricingPlans[0].price}</span> ({pricingPlans[0].name})</p>
+        {/* 底部版权信息 */}
+        <div className="mt-12 pt-6 border-t border-border flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <p className="text-xs text-muted-foreground">
+            © {new Date().getFullYear()} STYLEGEN.AI. ALL RIGHTS RESERVED.
+          </p>
+          
+          <div className="flex items-center gap-3">
+            <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
+            <span className="text-xs font-mono">SYSTEM STATUS: NORMAL</span>
+          </div>
         </div>
       </div>
     </footer>
