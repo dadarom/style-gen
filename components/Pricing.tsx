@@ -141,9 +141,9 @@ export function Pricing() {
                   </div>
                   
                   <Button 
-                    className={`w-full rounded-none font-bold uppercase text-sm ${plan.popular 
-                      ? 'bg-primary text-primary-foreground hover:bg-primary/90' 
-                      : 'bg-background border-2 border-border hover:border-primary hover:text-primary'} ${selectedPlan === plan.id ? 'scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]' : ''}`}
+                    className={`w-full rounded-none font-bold uppercase text-sm ${selectedPlan === plan.id 
+                      ? 'bg-primary text-primary-foreground hover:bg-primary/90 scale-105 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.15)]' 
+                      : 'bg-background border-2 border-border hover:border-primary hover:text-primary'}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       handlePlanSelect(plan.id);
