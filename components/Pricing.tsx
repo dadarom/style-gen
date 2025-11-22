@@ -41,7 +41,7 @@ export function Pricing() {
         </div>
 
         {/* 单次生成 */}
-        <div className="mb-16">
+        {/* <div className="mb-16">
           <div className={`border-2 ${selectedPlan === 'single' ? 'border-primary bg-primary/10 shadow-[8px_8px_0px_0px_rgba(0,0,0,0.15)]' : 'border-primary bg-primary/5 shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)]'} p-8 rounded-none transition-all hover:translate-y-[-2px]`} onClick={handleSinglePurchase} style={{ cursor: 'pointer' }}>
             <div className="flex flex-col md:flex-row justify-between items-center gap-8">
               <div>
@@ -65,12 +65,10 @@ export function Pricing() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
-        {/* 套餐优惠 */}
         <div className="mb-12">
-          {/* 选中套餐确认区域 */}
-          {selectedPlan && (
+          {/* {selectedPlan && (
             <div className="mb-8 border-2 border-primary bg-primary/10 p-6 rounded-none shadow-[6px_6px_0px_0px_rgba(0,0,0,0.1)]">
               <h3 className="text-xl font-bold uppercase mb-4">确认选择</h3>
               {(() => {
@@ -94,7 +92,7 @@ export function Pricing() {
                             alert(`确认购买 ${planInfo.name}，价格：¥${planInfo.price}`);
                           }}
                         >
-                          理解购买
+                          立即购买
                         </Button>
                       </div>
                     </div>
@@ -102,7 +100,7 @@ export function Pricing() {
                 }
               })()}
             </div>
-          )}
+          )} */}
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {PRICING_PLANS.map((plan) => (
