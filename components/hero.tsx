@@ -1,4 +1,5 @@
 import { Button } from "@/components/ui/button"
+import { SINGLE_PRICE, ESTIMATED_TIME } from '../data/pricing'
 
 export function Hero() {
   return (
@@ -44,11 +45,11 @@ export function Hero() {
       <div className="grid grid-cols-3 gap-0 w-full max-w-2xl border-2 border-border bg-white shadow-[8px_8px_0px_0px_rgba(0,0,0,0.1)]">
         <div className="py-4 px-4 text-center border-r-2 border-border hover:bg-primary/5 transition-colors">
           <div className="text-[10px] text-muted-foreground font-mono font-bold uppercase mb-1">PROCESSING_TIME</div>
-          <div className="text-xl md:text-2xl font-black text-primary">~60s</div>
+          <div className="text-xl md:text-2xl font-black text-primary">~{ESTIMATED_TIME}s</div>
         </div>
         <div className="py-4 px-4 text-center border-r-2 border-border hover:bg-primary/5 transition-colors">
           <div className="text-[10px] text-muted-foreground font-mono font-bold uppercase mb-1">COST_PER_GEN</div>
-          <div className="text-xl md:text-2xl font-black text-primary">¥0.3</div>
+          <div className="text-xl md:text-2xl font-black text-primary">¥{SINGLE_PRICE}</div>
         </div>
         <div className="py-4 px-4 text-center hover:bg-primary/5 transition-colors">
           <div className="text-[10px] text-muted-foreground font-mono font-bold uppercase mb-1">STYLE_MATRIX</div>

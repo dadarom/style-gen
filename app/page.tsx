@@ -1,15 +1,17 @@
-import { Header } from "@/components/header"
-import { Hero } from "@/components/hero"
-import { Workflow } from "@/components/workflow"
-import { Footer } from "@/components/footer"
+import { Header } from "../components/header"
+import { Hero } from "../components/hero"
+import { Workflow } from "../components/workflow"
+import { Pricing } from "../components/Pricing"
+import { Footer } from "../components/footer"
 
 export default function Home() {
   return (
-    <main className="flex-1 flex flex-col">
+    <>
       <Header />
       <Hero />
       <Workflow />
+      <Pricing />
       <Footer />
-    </main>
+    </>
   )
 }

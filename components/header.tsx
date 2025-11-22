@@ -1,7 +1,15 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 
+// 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
+  const navigationLinks = [
+    { id: 'features', label: '功能', href: '/features' },
+    { id: 'pricing', label: '价格', href: '/pricing' },
+    { id: 'examples', label: '示例', href: '/examples' },
+    { id: 'docs', label: '文档', href: '/docs' },
+  ];
+
   return (
     <header className="fixed top-0 left-0 right-0 z-50 border-b-2 border-border bg-background/80 backdrop-blur-md">
       <div className="container mx-auto flex h-16 items-center justify-between px-4 sm:px-6">
@@ -15,24 +23,15 @@ export function Header() {
         </div>
 
         <nav className="hidden md:flex items-center gap-8 text-sm font-bold font-mono uppercase tracking-wide">
-          <Link
-            href="#"
-            className="hover:text-primary transition-colors hover:underline decoration-2 underline-offset-4"
-          >
-            风格库
-          </Link>
-          <Link
-            href="#"
-            className="hover:text-primary transition-colors hover:underline decoration-2 underline-offset-4"
-          >
-            价格方案
-          </Link>
-          <Link
-            href="#"
-            className="hover:text-primary transition-colors hover:underline decoration-2 underline-offset-4"
-          >
-            文档中心
-          </Link>
+          {navigationLinks.map((link) => (
+            <Link
+              key={link.id}
+              href={link.href}
+              className="hover:text-primary transition-colors hover:underline decoration-2 underline-offset-4"
+            >
+              {link.label}
+            </Link>
+          ))}
         </nav>
 
         <div className="flex items-center gap-4">
