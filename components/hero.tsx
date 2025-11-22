@@ -4,7 +4,7 @@ import { SINGLE_PRICE, ESTIMATED_TIME } from '../data/pricing'
 export function Hero() {
   return (
     <section className="relative pt-32 pb-16 px-4 flex flex-col items-center text-center max-w-5xl mx-auto">
-      <Text 
+      {/* <Text 
         as="div"
         className="inline-flex items-center gap-2 px-3 py-1 border-2 border-border bg-white mb-8"
         font="mono"
@@ -17,7 +17,7 @@ export function Hero() {
       >
         <span className="w-2 h-2 bg-primary animate-pulse" />
         System Online v2.0
-      </Text>
+      </Text> */}
 
       <div className="space-y-4 mb-10">
         <Heading level="h1" size="3xl" weight="black" uppercase tracking="tighter" className="text-balance leading-[0.9]">

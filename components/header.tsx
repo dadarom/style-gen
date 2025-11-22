@@ -37,7 +37,7 @@ export function Header() {
 
         <div className="flex items-center gap-4">
           <Text 
-            className="hidden md:block bg-primary/10 px-2 py-1"
+            className="hidden bg-primary/10 px-2 py-1"
             font="mono"
             size="xs"
             weight="bold"
