@@ -9,10 +9,10 @@ export function Header() {
     { id: 'hero', label: '首页', href: '#hero' },
     { id: 'workflow', label: '功能', href: '#workflow' },
     { id: 'pricing', label: '价格', href: '#pricing' },
-    { id: 'docs', label: '文档', href: '/docs' },
+    { id: 'demo', label: '演示', href: '/demo' },
   ];
 
-  // 当前激活的导航项ID
+  // 当前激活的导航项ID，初始值设为hero
   const [activeSection, setActiveSection] = useState('hero');
 
   // 处理滚动事件，更新当前激活的导航项
@@ -35,8 +35,8 @@ export function Header() {
   };
 
   // 处理导航链接点击，实现平滑滚动
-  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    // 如果是锚点链接
+  const handleLinkClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string, id: string) => {
+    // 对于非锚点链接，让NextLink正常处理导航，不要阻止默认行为
     if (href.startsWith('#')) {
       e.preventDefault(); // 阻止默认行为
       const targetId = href.substring(1);
@@ -52,16 +52,38 @@ export function Header() {
         // 更新当前激活的部分
         setActiveSection(targetId);
       }
+    } else {
+      // 对于非锚点链接，直接更新激活状态，让NextLink处理导航
+      setActiveSection(id);
     }
   };
 
-  // 添加滚动事件监听
+  // 在客户端渲染完成后，检查当前页面并设置正确的激活状态
   useEffect(() => {
-    window.addEventListener('scroll', handleScroll);
-    // 初始化时检查当前位置
-    handleScroll();
-    // 清理函数
-    return () => window.removeEventListener('scroll', handleScroll);
+    if (typeof window !== 'undefined') {
+      // 检查当前页面路径
+      if (window.location.pathname === '/demo') {
+        setActiveSection('demo');
+      } else {
+        // 在其他页面，执行滚动检测
+        handleScroll();
+        // 添加滚动事件监听
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }
+
+      // 监听popstate事件，当用户使用浏览器前进/后退按钮时更新激活状态
+      const handlePathChange = () => {
+        if (window.location.pathname === '/demo') {
+          setActiveSection('demo');
+        } else {
+          handleScroll();
+        }
+      };
+
+      window.addEventListener('popstate', handlePathChange);
+      return () => window.removeEventListener('popstate', handlePathChange);
+    }
   }, []);
 
   return (
@@ -84,7 +106,7 @@ export function Header() {
               weight="bold"
               font="mono"
               className={`uppercase transition-colors ${activeSection === link.id ? 'text-primary' : 'hover:text-primary'}`}
-              onClick={(e) => handleLinkClick(e, link.href)}
+              onClick={(e) => handleLinkClick(e, link.href, link.id)}
             >
               {link.label}
             </Link>
