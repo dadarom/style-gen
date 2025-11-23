@@ -6,10 +6,10 @@ export default function DemoPage() {
   return (
     <>
       <Header />
-      <Container className="pt-32 pb-20">
+      <Container className="pt-24 pb-20">
         <section className="flex flex-col items-center text-center mb-16">
           <div className="space-y-4 mb-10">
-            <Heading level="h1" size="3xl" weight="black" uppercase tracking="tighter" className="text-balance leading-[0.9]">
+            <Heading level="h1" size="lg" weight="black" className="text-balance leading-[0.9]">
               功能<span className="text-primary">演示</span>
             </Heading>
             <Text 

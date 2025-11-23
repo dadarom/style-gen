@@ -19,11 +19,11 @@ export default function Home() {
       <section id="pricing">
         <Pricing />
       </section>
-      <section id="demo" className="pt-24">
+      <section id="demo">
         <Demo />
       </section>
       
-      <section id="about" className="pt-24">
+      <section id="about">
         <About />
       </section>
       <Footer />

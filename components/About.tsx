@@ -4,12 +4,12 @@ import { Card } from './atom/Card';
 
 const About: React.FC = () => {
   return (
-    <Container className="py-16">
-      <div className="text-center mb-12">
-        <Heading level="h2" size="xl" className="mb-4">
-          关于<span className="text-orange-500">我们</span>
+    <Container className="py-20">
+      <div className="text-center mb-12 mt-10">
+        <Heading level="h1" size="lg" weight="black" className="mb-6">
+          关于<span className="text-primary">我们</span>
         </Heading>
-        <Text size="md" className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
+        <Text size="lg" className="max-w-2xl mx-auto text-muted">
           了解我们的使命、技术优势和团队，打造最好的AI创意工具
         </Text>
       </div>

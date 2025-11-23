@@ -6,7 +6,7 @@ export function Demo() {
   return (
     <Container className="py-20">
       <section className="flex flex-col items-center text-center mb-16">
-        <div className="space-y-4 mb-10">
+        <div className="space-y-4 mb-10 mt-10">
           <Heading level="h2" size="3xl" weight="black" uppercase tracking="tighter" className="text-balance leading-[0.9]">
             功能<span className="text-primary">演示</span>
           </Heading>
