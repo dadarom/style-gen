@@ -2,6 +2,8 @@ import { Header } from "../components/header"
 import { Hero } from "../components/hero"
 import { Workflow } from "../components/workflow"
 import { Pricing } from "../components/Pricing"
+import { Demo } from "../components/Demo"
+import About from "../components/About"
 import { Footer } from "../components/footer"
 
 export default function Home() {
@@ -16,6 +18,13 @@ export default function Home() {
       </section>
       <section id="pricing">
         <Pricing />
+      </section>
+      <section id="demo" className="pt-24">
+        <Demo />
+      </section>
+      
+      <section id="about" className="pt-24">
+        <About />
       </section>
       <Footer />
     </>

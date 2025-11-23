@@ -4,12 +4,13 @@ import { Button, Link, Text, Container } from './atom';
 
 // 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
-  // 更新导航链接为锚点链接
+  // 更新导航链接为锚点链接，包含演示和关于我们
   const navigationLinks = [
     { id: 'hero', label: '首页', href: '#hero' },
     { id: 'workflow', label: '功能', href: '#workflow' },
     { id: 'pricing', label: '价格', href: '#pricing' },
-    { id: 'demo', label: '演示', href: '/demo' },
+    { id: 'demo', label: '演示', href: '#demo' },
+    { id: 'about', label: '关于我们', href: '#about' },
   ];
 
   // 当前激活的导航项ID，初始值设为hero
@@ -61,28 +62,24 @@ export function Header() {
   // 在客户端渲染完成后，检查当前页面并设置正确的激活状态
   useEffect(() => {
     if (typeof window !== 'undefined') {
-      // 检查当前页面路径
-      if (window.location.pathname === '/demo') {
-        setActiveSection('demo');
-      } else {
-        // 在其他页面，执行滚动检测
-        handleScroll();
-        // 添加滚动事件监听
-        window.addEventListener('scroll', handleScroll);
-        return () => window.removeEventListener('scroll', handleScroll);
-      }
-
+      // 初始执行滚动检测，确定当前激活的部分
+      handleScroll();
+      
+      // 添加滚动事件监听
+      window.addEventListener('scroll', handleScroll);
+      
       // 监听popstate事件，当用户使用浏览器前进/后退按钮时更新激活状态
       const handlePathChange = () => {
-        if (window.location.pathname === '/demo') {
-          setActiveSection('demo');
-        } else {
-          handleScroll();
-        }
+        handleScroll();
       };
 
       window.addEventListener('popstate', handlePathChange);
-      return () => window.removeEventListener('popstate', handlePathChange);
+      
+      // 清理函数
+      return () => {
+        window.removeEventListener('scroll', handleScroll);
+        window.removeEventListener('popstate', handlePathChange);
+      };
     }
   }, []);
 
