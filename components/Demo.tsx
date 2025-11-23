@@ -7,34 +7,13 @@ export function Demo() {
     <Container className="py-20">
       <section className="flex flex-col items-center text-center mb-16">
         <div className="space-y-4 mb-10 mt-10">
-          <Heading level="h2" size="3xl" weight="black" uppercase tracking="tighter" className="text-balance leading-[0.9]">
-            功能<span className="text-primary">演示</span>
-          </Heading>
-          <Text 
-            as="p"
-            className="border-y border-border py-2 mx-auto max-w-2xl"
-            font="mono"
-            size="xs"
-            color="muted"
-            uppercase
-            tracking="wider"
-          >
-            AI-POWERED STYLE TRANSFER IN ACTION
-          </Text>
+          <h2 className="text-3xl md:text-5xl font-black tracking-tighter uppercase mb-6 mt-8">
+            功能 <span className="text-primary">演示</span>
+          </h2>
+          <p className="max-w-2xl mx-auto text-muted-foreground">
+            观看我们的AI风格迁移技术如何将普通照片转化为艺术作品。以下演示展示了不同风格的转换效果和实时处理能力。
+          </p>
         </div>
-        
-        <Text 
-          as="p"
-          className="max-w-2xl text-balance mb-12 leading-relaxed"
-          size="lg"
-          weight="medium"
-          color="muted"
-        >
-          观看我们的AI风格迁移技术如何将普通照片转化为艺术作品。以下演示展示了不同风格的转换效果和实时处理能力。
-          <span className="block mt-4 font-mono text-xs text-primary font-bold opacity-80">
-            [ REAL_TIME ] [ MULTI_STYLE ] [ HIGH_QUALITY ]
-          </span>
-        </Text>
       </section>
       
       {/* 视频演示区域 */}
