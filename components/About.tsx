@@ -7,7 +7,7 @@ const About: React.FC = () => {
     <Container className="py-16">
       <div className="text-center mb-12">
         <Heading level="h2" size="xl" className="mb-4">
-          简单透明的<span className="text-orange-500">关于我们</span>
+          关于<span className="text-orange-500">我们</span>
         </Heading>
         <Text size="md" className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
           了解我们的使命、技术优势和团队，打造最好的AI创意工具
