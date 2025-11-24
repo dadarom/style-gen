@@ -10,12 +10,12 @@ export default async function proxyHandler(req: NextApiRequest, res: NextApiResp
     const path = req.url?.replace(/^\/api/, '') || '/';
     const url = `${TARGET_API_URL}${path}`;
     
-    // 提取API Key
+    // 提取API_KEY
     const apiKey = req.headers.authorization?.replace('Bearer ', '');
     
     if (!apiKey) {
       return res.status(401).json({
-        error: '缺少API Key',
+        error: '缺少API_KEY',
         code: 'NO_API_KEY'
       });
     }

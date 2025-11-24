@@ -62,7 +62,7 @@ export default function AuthForm() {
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
                 <Label htmlFor="apiKey" className="text-sm font-medium text-gray-700 dark:text-gray-300 block mb-2">
-                  请输入您的 StyleGen API_Key 以解锁<span className="text-orange-500">智能</span>风格转换引擎
+                  请输入您的 StyleGen API_KEY，以解锁<span className="text-orange-500">智能</span>风格转换引擎
                 </Label>
                 <Input
                   id="apiKey"

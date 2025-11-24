@@ -31,7 +31,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [status, setStatus] = useState<'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR'>('WAITING');
 
-  // 从localStorage加载API Key
+  // 从localStorage加载API_KEY
   useEffect(() => {
     const savedApiKey = localStorage.getItem('stylegen_api_key');
     if (savedApiKey) {
@@ -44,7 +44,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     setStatus('VERIFYING');
     
     try {
-      // 这里可以添加真实的API Key验证逻辑
+      // 这里可以添加真实的API_KEY验证逻辑
       // 暂时使用简单的验证规则
       if (key.startsWith('sk-')) {
         setApiKey(key);
@@ -58,7 +58,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
         return false;
       }
     } catch (error) {
-      console.error('验证API Key失败:', error);
+      console.error('验证API_KEY失败:', error);
       setStatus('ERROR');
       return false;
     }

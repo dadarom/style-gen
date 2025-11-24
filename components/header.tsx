@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { Button, Link, Text, Container } from './atom';
 import { useAuth } from './auth/AuthProvider';
 import AuthForm from './auth/AuthForm';
+import { LogIn, LogOut } from 'lucide-react';
 
 // 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
@@ -131,7 +132,9 @@ export function Header() {
               size="sm" 
               font="mono"
               onClick={() => logout()}
+              className="flex items-center gap-1.5 hover:bg-foreground/5 transition-all duration-300"
             >
+              <LogOut size={16} className="transition-transform duration-300 group-hover:rotate-180" />
               登出
             </Button>
           ) : (
@@ -140,7 +143,9 @@ export function Header() {
               size="sm" 
               font="mono"
               onClick={() => setIsLoginModalOpen(true)}
+              className="flex items-center gap-1.5 hover:bg-primary/5 transition-all duration-300 group"
             >
+              <LogIn size={16} className="transition-transform duration-300 group-hover:scale-110" />
               登录
             </Button>
           )}
@@ -151,7 +156,7 @@ export function Header() {
             uppercase
             tracking="wider"
           >
-            获取 API Key
+            获取 API_KEY
           </Button>
         </div>
       </Container>

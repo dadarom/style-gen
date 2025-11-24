@@ -14,7 +14,7 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
   const apiKey = localStorage.getItem('stylegen_api_key');
   
   if (!apiKey) {
-    throw new ApiError('NO_API_KEY', '请先验证API Key');
+    throw new ApiError('NO_API_KEY', '请先验证API_KEY');
   }
 
   const headers = {
@@ -46,10 +46,10 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
   }
 }
 
-// API Key 验证函数
+// API_KEY 验证函数
 export async function verifyApiKey(apiKey: string): Promise<boolean> {
   try {
-    // 临时存储API Key用于验证
+    // 临时存储API_KEY用于验证
     localStorage.setItem('stylegen_api_key', apiKey);
     
     // 实际项目中应该调用验证端点
