@@ -7,6 +7,7 @@ const nextConfig = {
   },
   assetPrefix: '/style-gen/',
   trailingSlash: false,
+  skipTrailingSlashRedirect: true,
 };
 
 module.exports = nextConfig;

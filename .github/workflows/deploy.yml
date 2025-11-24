@@ -36,4 +36,5 @@ jobs:
           publish_dir: ./out
           publish_branch: gh-pages
           force_orphan: true
+          keep_files: false
           commit_message: 'chore: deploy to GitHub Pages [${{ github.sha }}]'
