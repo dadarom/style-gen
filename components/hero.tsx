@@ -1,7 +1,15 @@
+'use client'
 import { Button, Heading, Text } from './atom';
 import { SINGLE_PRICE, ESTIMATED_TIME } from '../data/pricing'
 
 export function Hero() {
+  const scrollToWorkflow = () => {
+    const element = document.getElementById('workflow');
+    if (element) {
+      element.scrollIntoView({ behavior: 'smooth' });
+    }
+  };
+
   return (
     <section className="relative pt-32 pb-16 px-4 flex flex-col items-center text-center max-w-5xl mx-auto">
       {/* <Text 
@@ -57,6 +65,7 @@ export function Hero() {
           uppercase
           tracking="wider"
           style={{ boxShadow: '6px 6px 0px 0px rgba(0,0,0,0.2)' }}
+          onClick={scrollToWorkflow}
         >
           立即开始创作
         </Button>

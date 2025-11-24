@@ -10,7 +10,7 @@ export default function DemoPage() {
         <section className="flex flex-col items-center text-center mb-16">
           <div className="space-y-4 mb-10">
             <Heading level="h1" size="lg" weight="black" className="text-balance leading-[0.9]">
-              功能<span className="text-primary">演示</span>
+              创作<span className="text-primary">演示</span>
             </Heading>
             <Text 
               as="p"

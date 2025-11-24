@@ -11,7 +11,7 @@ export function Header() {
   // 更新导航链接为锚点链接，包含演示和关于我们
   const navigationLinks = [
     { id: 'hero', label: '首页', href: '#hero' },
-    { id: 'workflow', label: '功能', href: '#workflow' },
+    { id: 'workflow', label: '创作', href: '#workflow' },
     { id: 'pricing', label: '价格', href: '#pricing' },
     { id: 'demo', label: '演示', href: '#demo' },
     { id: 'about', label: '关于我们', href: '#about' },
