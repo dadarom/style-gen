@@ -99,6 +99,31 @@ ai-stylegen/
 - 价格对比和优惠信息
 - 购买行动按钮
 
+## GitHub Pages 部署说明
+
+### 准备工作
+1. 确保项目已推送到GitHub仓库
+2. 项目已配置好静态导出功能
+
+### 自动部署（推荐）
+本项目已配置GitHub Actions工作流，会在推送到`main`分支时自动部署：
+1. 推送到`main`分支触发自动部署
+2. GitHub Actions会自动构建和部署到GitHub Pages
+3. 部署完成后，访问 `https://<your-username>.github.io/<repository-name>/` 查看网站
+
+### 手动部署
+如需手动部署，可以使用以下命令：
+```bash
+npm run build
+npm run export
+npm run deploy
+```
+
+### 配置注意事项
+- 已配置Next.js静态导出（output: 'export'）
+- 图片已设置为不优化模式以兼容GitHub Pages
+- .github/workflows/deploy.yml包含完整的部署流程
+
 ### Footer 组件
 
 页面底部组件，包含导航链接、社交媒体和版权信息。
