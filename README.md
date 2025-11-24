@@ -44,6 +44,46 @@ ai-stylegen/
 └── README.md             # 项目文档
 ```
 
+## 部署配置
+
+### 开发与生产环境配置
+
+本项目使用基于环境的配置，确保在开发和生产环境中正常运行：
+
+- **开发环境**：使用标准Next.js行为进行本地测试
+- **生产环境**：为GitHub Pages部署配置以下设置：
+  - 基础路径：`/style-gen`
+  - 资源前缀：`/style-gen/`
+  - 启用静态导出
+  - 为静态导出兼容性禁用图像优化
+  - 跳过尾部斜杠重定向以提高GitHub Pages兼容性
+
+### GitHub Pages部署
+
+成功部署到GitHub Pages的关键设置：
+
+1. 仓库配置为从`gh-pages`分支部署
+2. GitHub Actions工作流包含`keep_files: false`以防止陈旧文件
+3. 不使用CNAME文件以避免自定义域名冲突
+
+### 本地开发
+
+运行开发服务器：
+
+```bash
+npm run dev
+```
+
+### 生产构建
+
+构建用于生产部署：
+
+```bash
+npm run build
+```
+
+静态输出将生成在`out/`目录中。
+
 ## 组件说明
 
 ### Header 组件
