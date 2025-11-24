@@ -1,7 +1,7 @@
 'use client';
 import React, { useState, useEffect } from 'react';
 import { useAuth } from './AuthProvider';
-import { Dialog, DialogContent } from '../ui/dialog';
+import { Dialog, DialogContent, DialogTitle } from '../ui/dialog';
 import { X } from 'lucide-react';
 import { Button } from '../atom/Button';
 import { Text } from '../atom/Text';
@@ -24,12 +24,12 @@ export default function AuthForm() {
     e.preventDefault();
     
     try {
-      // 修改验证逻辑：sk开头的任意字符串
-      if (apiKey.trim() && apiKey.trim().startsWith('sk')) {
+      // 统一验证逻辑：检查是否以sk-开头
+      if (apiKey.trim() && apiKey.trim().startsWith('sk-')) {
         const success = await verifyApiKey(apiKey);
         
         if (success) {
-          // 验证成功后关闭模态框
+          // 验证成功后自动关闭登录框
           setIsLoginModalOpen(false);
         }
       }
@@ -55,9 +55,9 @@ export default function AuthForm() {
           </button>
         
           <div className="p-6">
-            <h2 className="text-2xl font-bold text-center mb-4 text-gray-900 dark:text-white">
+            <DialogTitle className="text-2xl font-bold text-center mb-4 text-gray-900 dark:text-white">
               StyleGen<span className="text-orange-500">.AI</span>
-            </h2>
+            </DialogTitle>
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="space-y-2">
@@ -78,7 +78,7 @@ export default function AuthForm() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   type="submit"
-                  disabled={status === 'VERIFYING' || !apiKey.trim() || !apiKey.trim().startsWith('sk')}
+                  disabled={status === 'VERIFYING' || !apiKey.trim() || !apiKey.trim().startsWith('sk-')}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-70"
                 >
                   验证 / VERIFY
@@ -94,9 +94,9 @@ export default function AuthForm() {
               </div>
 
               <div className="flex justify-between items-center mt-2 mb-4">
-                {apiKey.trim() && !apiKey.trim().startsWith('sk') && (
-                  <Text className="text-sm text-gray-500 dark:text-gray-400">
-                    API_KEY错误
+                {apiKey.trim() && !apiKey.trim().startsWith('sk-') && (
+                  <Text className="text-sm text-red-500 dark:text-red-400">
+                    API_KEY格式错误
                   </Text>
                 )}
                 <Link
