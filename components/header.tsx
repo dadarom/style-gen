@@ -1,11 +1,12 @@
-"use client"
+'use client';
 import { useState, useEffect } from 'react';
 import { Button, Link, Text, Container } from './atom';
 import { useAuth } from './auth/AuthProvider';
+import AuthForm from './auth/AuthForm';
 
 // 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
-  const { isAuthenticated, logout } = useAuth();
+  const { isAuthenticated, logout, setIsLoginModalOpen } = useAuth();
   
   // 更新导航链接为锚点链接，包含演示和关于我们
   const navigationLinks = [
@@ -134,15 +135,14 @@ export function Header() {
               登出
             </Button>
           ) : (
-            <Link href="/auth">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                font="mono"
-              >
-                登录
-              </Button>
-            </Link>
+            <Button 
+              variant="outline" 
+              size="sm" 
+              font="mono"
+              onClick={() => setIsLoginModalOpen(true)}
+            >
+              登录
+            </Button>
           )}
           <Button
             size="sm"

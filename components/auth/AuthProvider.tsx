@@ -4,6 +4,8 @@ import React, { createContext, useContext, useState, useEffect, ReactNode } from
 interface AuthContextType {
   apiKey: string | null;
   isAuthenticated: boolean;
+  isLoginModalOpen: boolean;
+  setIsLoginModalOpen: (open: boolean) => void;
   status: 'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR';
   verifyApiKey: (key: string) => Promise<boolean>;
   logout: () => void;
@@ -26,6 +28,7 @@ interface AuthProviderProps {
 export default function AuthProvider({ children }: AuthProviderProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [status, setStatus] = useState<'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR'>('WAITING');
 
   // 从localStorage加载API Key
@@ -71,6 +74,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const value: AuthContextType = {
     apiKey,
     isAuthenticated,
+    isLoginModalOpen,
+    setIsLoginModalOpen,
     status,
     verifyApiKey,
     logout
