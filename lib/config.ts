@@ -6,10 +6,6 @@ export const API_CONFIG = {
   VOLC_ENGINE_API_BASE_URL: 'https://ark.cn-beijing.volces.com/api/v3',
   VOLC_ENGINE_IMAGES_ENDPOINT: '/images/generations',
   
-  // NewAPI相关配置
-  NEW_API_BASE_URL: 'https://api.newapi.pro/v1/chat/completions',
-  NEWAPI_BASE_URL: 'https://api.newapi.pro/v1',
-  
   // 本地API配置
   API_BASE_URL: '/api',
   
@@ -48,8 +44,6 @@ export const ERROR_CODES = {
   UNAUTHORIZED: 'UNAUTHORIZED',
   INVALID_RESPONSE: 'INVALID_RESPONSE',
   STREAM_ERROR: 'STREAM_ERROR',
-  NEWAPI_ERROR: 'NEWAPI_ERROR',
-  NEWAPI_REQUEST_FAILED: 'NEWAPI_REQUEST_FAILED',
 };
 
 // 错误消息配置
@@ -60,8 +54,6 @@ export const ERROR_MESSAGES = {
   [ERROR_CODES.UNAUTHORIZED]: '未授权，请提供有效的API密钥',
   [ERROR_CODES.INVALID_RESPONSE]: '响应格式无效',
   [ERROR_CODES.STREAM_ERROR]: '无法获取响应流',
-  [ERROR_CODES.NEWAPI_ERROR]: 'NewAPI请求失败',
-  [ERROR_CODES.NEWAPI_REQUEST_FAILED]: 'NewAPI请求失败',
 };
 
 // 成功消息配置

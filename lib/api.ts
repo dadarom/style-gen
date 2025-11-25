@@ -70,27 +70,24 @@ export async function verifyApiKey(apiKey: string): Promise<boolean> {
   }
 }
 
-// 风格转换函数 - 通过NewAPI调用火山引擎SeedDream4.0模型
+// 风格转换函数 - 直接调用火山方舟API
 export async function transformStyle(
   imageUrl: string,
   styleType: string,
   params: Record<string, any> = {},
   onProgress?: (progress: number) => void
 ) {
-  // 使用NewAPI调用火山引擎SeedDream4.0模型
-  let apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
-  
-  // 如果没有API密钥，使用默认测试密钥（仅用于演示）
-  if (!apiKey) {
-    // 注意：在实际产品中，应该要求用户提供有效的API密钥
-    apiKey = API_CONFIG.DEFAULT.API_KEY;
-    localStorage.setItem(API_CONFIG.STORAGE_KEYS.API_KEY, apiKey);
-  }
-  
   try {
-    // 准备请求数据，符合火山方舟OpenAI接口模式
+    // 从localStorage获取API密钥
+    const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+    
+    if (!apiKey) {
+      throw new ApiError(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
+    }
+    
+    // 准备请求数据，严格遵循火山方舟OpenAI接口模式
     const requestBody = {
-      model: MODELS.VOLC_ENGINE_IMAGE_MODEL, // 火山方舟图文生图模型ID
+      model: MODELS.VOLC_ENGINE_IMAGE_MODEL,
       prompt: `将图片转换为${styleType}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
       image: imageUrl,
       size: '2K',
@@ -100,79 +97,48 @@ export async function transformStyle(
       }
     };
     
-    // 移除进度模拟逻辑，现在由轮询机制控制进度
-    
-    // 初始化返回结果变量
-    let resultImage = imageUrl; // 默认返回原图
-    
-    try {
-      // 发送请求到火山方舟API
-      const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`
-        },
-        body: JSON.stringify(requestBody)
-      });
+    // 直接调用火山方舟API
+    const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify(requestBody)
+    });
 
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        
-        // 特殊处理401未授权错误
-        if (response.status === 401) {
-          // 清除无效的API密钥
-          localStorage.removeItem(API_CONFIG.STORAGE_KEYS.API_KEY);
-          
-          // 对于演示环境，返回模拟的成功结果而不是抛出错误
-          // 在实际产品中，应该提示用户提供有效的API密钥
-          
-          // 返回模拟的成功结果（仅用于演示）
-          return {
-            success: true,
-            generatedImage: imageUrl, // 返回原图作为模拟结果
-            message: SUCCESS_MESSAGES.DEMO_MODE_SUCCESS
-          };
-        }
-        
-        throw new ApiError(
-          errorData.code || ERROR_CODES.NEWAPI_ERROR,
-          errorData.message || ERROR_MESSAGES.NEWAPI_ERROR
-        );
-      }
-      
-      // 处理标准JSON响应
-      const responseData = await response.json();
-      
-      // 检查响应格式是否正确
-      if (responseData && responseData.data && Array.isArray(responseData.data) && responseData.data.length > 0 && responseData.data[0].url) {
-        resultImage = responseData.data[0].url; // 从响应中提取图片URL
-      } else {
-        throw new ApiError(ERROR_CODES.INVALID_RESPONSE, ERROR_MESSAGES.INVALID_RESPONSE);
-      }
-      
-      // 确保进度达到100%
-      if (onProgress) {
-        onProgress(1.0);
-      }
-    } catch (error) {
-      // 轮询机制会处理进度更新
-      
-      // 重新抛出错误
-      throw error;
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new ApiError(
+        errorData.code || ERROR_CODES.API_ERROR,
+        errorData.message || ERROR_MESSAGES.API_ERROR
+      );
     }
     
-    // 返回一致的结果格式
+    // 处理响应
+    const responseData = await response.json();
+    
+    // 验证响应结构
+    if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0 || !responseData.data[0].url) {
+      throw new ApiError(ERROR_CODES.INVALID_RESPONSE, ERROR_MESSAGES.INVALID_RESPONSE);
+    }
+    
+    // 更新进度
+    if (onProgress) {
+      onProgress(1.0);
+    }
+    
+    // 返回结果
     return {
       success: true,
-      generatedImage: resultImage,
+      generatedImage: responseData.data[0].url,
       message: SUCCESS_MESSAGES.IMAGE_TRANSFORM_SUCCESS
     };
   } catch (error) {
     if (error instanceof ApiError) {
       throw error;
     }
-    throw new ApiError(ERROR_CODES.NEWAPI_REQUEST_FAILED, ERROR_MESSAGES.NEWAPI_REQUEST_FAILED);
+    throw new ApiError(ERROR_CODES.NETWORK_ERROR, ERROR_MESSAGES.NETWORK_ERROR);
   }
 }
 
@@ -182,7 +148,7 @@ export async function getAvailableStyles() {
 }
 
 // 通过火山方舟API调用生成图片
-async function callNewApiForImageGeneration(imageBase64: string, styleId: string, newApiKey: string) {
+async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId: string, apiKey: string) {
   try {
     // 构建请求体，使用火山方舟OpenAI接口模式
     const requestBody = {
@@ -200,7 +166,7 @@ async function callNewApiForImageGeneration(imageBase64: string, styleId: string
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${newApiKey}`,
+        'Authorization': `Bearer ${apiKey}`,
       },
       body: JSON.stringify(requestBody)
     });
@@ -208,8 +174,8 @@ async function callNewApiForImageGeneration(imageBase64: string, styleId: string
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw new ApiError(
-        errorData.code || ERROR_CODES.NEWAPI_ERROR,
-        errorData.message || ERROR_MESSAGES.NEWAPI_ERROR
+        errorData.code || ERROR_CODES.API_ERROR,
+        errorData.message || ERROR_MESSAGES.API_ERROR
       );
     }
 
@@ -226,17 +192,17 @@ async function callNewApiForImageGeneration(imageBase64: string, styleId: string
 // 生成风格化图片函数
 export async function generateStyledImage(imageBase64: string, styleId: string): Promise<string> {
   try {
-    // 从localStorage获取NewAPI的API Key
-    const newApiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
-    if (!newApiKey) {
+    // 从localStorage获取API密钥，直接使用火山方舟API
+    const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+    
+    if (!apiKey) {
       throw new ApiError(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
-    // 调用NewAPI生成图片
-    const result = await callNewApiForImageGeneration(imageBase64, styleId, newApiKey);
+    // 调用火山方舟API进行图片生成
+    const result = await callVolcEngineApiForImageGeneration(imageBase64, styleId, apiKey);
 
     // 从结果中提取生成的图片URL
-    // 根据火山方舟API返回格式，图片URL在data[0].url中
     if (result.data && Array.isArray(result.data) && result.data.length > 0 && result.data[0].url) {
       return result.data[0].url;
     } else {
@@ -250,9 +216,9 @@ export async function generateStyledImage(imageBase64: string, styleId: string):
   }
 }
 
-// 导出API工具对象
+// API工具对象导出
 export const api = {
-  verifyApiKey,
+  generateStyledImage,
   transformStyle,
-  getAvailableStyles
+  // 其他API方法可以在这里添加
 };
