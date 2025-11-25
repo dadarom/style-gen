@@ -1,9 +1,11 @@
 "use client"
 // Workflow组件 - 生成图片的工作流程
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { WORKFLOW_STEPS } from '../data/workflow';
 import { STYLES, CATEGORIES } from '../data/styles';
 import { Button } from '@/components/ui/button';
+import { api, ApiError } from '../lib/api';
+import { API_CONFIG } from '../lib/config';
 
 // 构建正确的图片路径，支持本地和GitHub Pages环境
 const getImagePath = (path: string): string => {
@@ -23,7 +25,26 @@ export function Workflow() {
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [progress, setProgress] = useState(0); // 添加进度状态
+  const [error, setError] = useState<string | null>(null); // 添加错误状态
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const generationStartTimeRef = useRef<number | null>(null); // 记录生成开始时间，用于计算已用时间
+  
+  // 计算已用时间
+  const getElapsedTime = () => {
+    if (!generationStartTimeRef.current) return 0;
+    return Math.floor((Date.now() - generationStartTimeRef.current) / 1000);
+  };
+
+  // 组件卸载时清除定时器
+  useEffect(() => {
+    return () => {
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+      }
+    };
+  }, []);
 
   // 过滤风格
   const filteredStyles = selectedCategory === '全部'
@@ -60,16 +81,112 @@ export function Workflow() {
   };
 
   // 生成图片
-  const generateImage = () => {
+  const generateImage = async () => {
     if (!uploadedImage || !selectedStyle) return;
     
     setLoading(true);
-    // 模拟生成过程
-    setTimeout(() => {
-      setGeneratedImage(uploadedImage); // 这里应该是实际生成的图片
+    setProgress(0);
+    setError(null);
+    setGeneratedImage(null); // 清除之前的生成结果
+    
+    // 清除现有的进度更新定时器
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+    }
+    
+    // 开始计时
+    generationStartTimeRef.current = Date.now();
+    
+    // 设置60秒超时时间
+    const timeoutMs = API_CONFIG.REQUEST.TIMEOUT;
+    // 设置轮询间隔
+    const pollingIntervalMs = API_CONFIG.DEFAULT.POLLING_INTERVAL;
+    
+    // 模拟进度更新（每600ms更新一次）
+    progressIntervalRef.current = setInterval(() => {
+      setProgress(prev => {
+        const newProgress = prev + 1;
+        return newProgress > 95 ? 95 : newProgress;
+      });
+    }, 600);
+    
+    // 记录任务ID（用于轮询）
+    let taskId: string | null = null;
+    
+    try {
+      // 1. 首先提交转换任务
+      // 注意：这里假设api.ts中的transformStyle函数已经处理了提交任务的逻辑
+      // 并返回任务ID用于后续轮询
+      console.log('提交风格转换任务，等待方舟平台处理...');
+      
+      // 初始化任务（在实际实现中，应该调用提交任务的API）
+      // 这里简化处理，使用模拟的任务ID
+      taskId = `task_${Date.now()}`;
+      
+      // 2. 设置轮询和超时逻辑
+      const startTime = Date.now();
+      let pollingTimer: NodeJS.Timeout | null = null;
+      
+      // 创建一个Promise来处理轮询和超时
+      await new Promise<void>((resolve, reject) => {
+        // 轮询函数
+        const checkStatus = async () => {
+          const elapsedTime = Date.now() - startTime;
+          
+          // 检查是否超时
+          if (elapsedTime >= timeoutMs) {
+            if (pollingTimer) clearInterval(pollingTimer);
+            reject(new ApiError('TIMEOUT', '图片转换超时，请稍后重试'));
+            return;
+          }
+          
+          try {
+            // 在实际实现中，这里应该调用检查任务状态的API
+            // 这里简化处理，模拟轮询过程
+            console.log(`轮询任务状态: ${taskId}`);
+            
+            // 模拟随机成功率（80%的概率在15-45秒内成功）
+            const randomSuccess = Math.random() < 0.2; // 每次轮询有20%的概率成功
+            const hasElapsedEnoughTime = elapsedTime >= 15000; // 至少等待15秒
+            
+            if (randomSuccess && hasElapsedEnoughTime) {
+              // 模拟成功获取结果
+              console.log('任务完成，获取转换结果');
+              
+              // 调用transformStyle获取最终结果
+              const response = await api.transformStyle(uploadedImage, selectedStyle, {});
+              
+              setGeneratedImage(response.generatedImage);
+              if (pollingTimer) clearInterval(pollingTimer);
+              resolve();
+            }
+          } catch (pollingErr) {
+            console.error('轮询任务状态失败:', pollingErr);
+          }
+        };
+        
+        // 立即执行一次，然后开始轮询
+        checkStatus();
+        pollingTimer = setInterval(checkStatus, pollingIntervalMs);
+      });
+    } catch (err) {
+      console.error('图片生成失败:', err);
+      if (err instanceof ApiError) {
+        setError(err.message);
+      } else {
+        setError('生成图片时发生错误，请稍后重试');
+      }
+    } finally {
+      // 清除所有定时器
+      if (progressIntervalRef.current) {
+        clearInterval(progressIntervalRef.current);
+        progressIntervalRef.current = null;
+      }
+      
+      setProgress(100);
       setLoading(false);
       setStep(4);
-    }, 3000);
+    }
   };
 
   // 步骤内容渲染
@@ -172,10 +289,24 @@ export function Workflow() {
                     </svg>
                   </div>
                   <div className="w-full bg-background border-2 border-border h-2 mb-2">
-                    <div className="bg-primary h-full animate-pulse"></div>
+                    <div 
+                      className="bg-primary h-full transition-all duration-500 ease-out" 
+                      style={{ width: `${progress}%` }}
+                    ></div>
                   </div>
-                  <p className="font-mono text-xs uppercase tracking-wide">预计用时: 60秒</p>
+                  <p className="font-mono text-xs uppercase tracking-wide">
+                    {generationStartTimeRef.current && (
+                      <>
+                        已用时: {getElapsedTime()}秒 / 预计用时: 60秒
+                      </>
+                    )}
+                  </p>
                   <p className="text-sm text-muted-foreground">正在进行风格迁移，请稍候...</p>
+                  {error && (
+                    <div className="text-red-500 text-sm bg-red-50 p-4 border border-red-200">
+                      {error}
+                    </div>
+                  )}
                 </div>
               ) : (
                 <div className="flex flex-col items-center">
@@ -189,39 +320,59 @@ export function Workflow() {
       case 4:
         return (
           <div className="space-y-6">
-            <h3 className="text-2xl font-bold uppercase">生成完成</h3>
+            <h3 className="text-2xl font-bold uppercase">
+              {error ? '生成失败' : '生成完成'}
+            </h3>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="border-2 border-border overflow-hidden">
-                <div className="bg-background/80 p-2 border-b border-border">
-                  <p className="text-xs font-mono font-bold uppercase">原始图片</p>
-                </div>
-                {uploadedImage && (
-                  <img 
-                    src={uploadedImage} 
-                    alt="原始图片" 
-                    className="w-full aspect-square object-contain bg-background"
-                  />
+            {error ? (
+              <div className="bg-red-50 border-2 border-red-200 p-6 rounded-md">
+                <p className="text-red-500 font-mono mb-4">错误信息: {error}</p>
+                <p className="text-sm text-muted-foreground mb-4">请检查您的API密钥是否正确，或稍后再试。</p>
+                {step === 4 && (
+                  <Button
+                    onClick={() => {
+                      setError(null);
+                      setStep(3);
+                    }}
+                    className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90"
+                  >
+                    重试
+                  </Button>
                 )}
               </div>
-              
-              <div className="border-2 border-border overflow-hidden">
-                <div className="bg-background/80 p-2 border-b border-border">
-                  <p className="text-xs font-mono font-bold uppercase">生成图片</p>
-                </div>
-                {generatedImage ? (
-                  <img 
-                    src={generatedImage} 
-                    alt="生成的图片" 
-                    className="w-full aspect-square object-contain bg-background"
-                  />
-                ) : (
-                  <div className="w-full aspect-square bg-background/50 flex items-center justify-center">
-                    <p className="text-muted-foreground">生成的图片将显示在这里</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="border-2 border-border overflow-hidden">
+                  <div className="bg-background/80 p-2 border-b border-border">
+                    <p className="text-xs font-mono font-bold uppercase">原始图片</p>
                   </div>
-                )}
+                  {uploadedImage && (
+                    <img 
+                      src={uploadedImage} 
+                      alt="原始图片" 
+                      className="w-full aspect-square object-contain bg-background"
+                    />
+                  )}
+                </div>
+                
+                <div className="border-2 border-border overflow-hidden">
+                  <div className="bg-background/80 p-2 border-b border-border">
+                    <p className="text-xs font-mono font-bold uppercase">生成图片</p>
+                  </div>
+                  {generatedImage ? (
+                    <img 
+                      src={generatedImage} 
+                      alt="生成的图片" 
+                      className="w-full aspect-square object-contain bg-background"
+                    />
+                  ) : (
+                    <div className="w-full aspect-square bg-background/50 flex items-center justify-center">
+                      <p className="text-muted-foreground">生成的图片将显示在这里</p>
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
+            )}
           </div>
         );
 
@@ -252,9 +403,22 @@ export function Workflow() {
   // 重置生成
   const handleReset = () => {
     setStep(1);
-    setSelectedStyle(null);
     setUploadedImage(null);
+    setSelectedCategory('全部');
+    setSelectedStyle(null);
     setGeneratedImage(null);
+    setProgress(0);
+    setError(null);
+    generationStartTimeRef.current = null;
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    
+    if (progressIntervalRef.current) {
+      clearInterval(progressIntervalRef.current);
+      progressIntervalRef.current = null;
+    }
   };
 
   return (
