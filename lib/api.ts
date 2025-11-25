@@ -43,11 +43,42 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
     }
 
     return await response.json();
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof ApiError) {
+      // 根据火山方舟API错误码提供更友好的错误信息
+      const errorMap: Record<string, string> = {
+        'AuthenticationError': 'API密钥无效或已过期，请检查您的密钥设置',
+        'InvalidParameter': '请求参数无效，请检查输入内容',
+        'MissingParameter': '缺少必要参数，请确保所有必填项都已填写',
+        'SensitiveContentDetected': '输入内容可能包含敏感信息，请更换其他内容',
+        'InputImageSensitiveContentDetected': '输入图片可能包含敏感信息，请更换其他图片',
+        'InputTextSensitiveContentDetected': '输入文本可能包含敏感信息，请更换其他文本',
+        'OutputImageSensitiveContentDetected': '生成的图像可能包含敏感信息，请更换输入内容后重试',
+        'QuotaExceeded': 'API调用次数已达上限，请稍后再试或联系管理员',
+        'InvalidRequest': '请求无效，请检查参数格式',
+        'ServiceUnavailable': '服务暂时不可用，请稍后再试'
+      };
+      
+      // 如果错误码在映射中存在，使用更友好的错误信息
+      if (errorMap[error.code]) {
+        error.message = errorMap[error.code];
+      }
+      
       throw error;
     }
-    throw new ApiError(ERROR_CODES.NETWORK_ERROR, ERROR_MESSAGES.NETWORK_ERROR);
+    
+    // 处理不同类型的网络错误
+    let errorMessage = ERROR_MESSAGES.NETWORK_ERROR;
+    
+    if (error instanceof TypeError) {
+      // 通常是网络连接问题或域名解析失败
+      errorMessage = '网络连接失败，请检查您的网络设置或稍后再试';
+    } else if (typeof error === 'object' && error !== null && error.name === 'NetworkError') {
+      // 显式的网络错误
+      errorMessage = '网络请求被中断，请检查网络连接后重试';
+    }
+    
+    throw new ApiError(ERROR_CODES.NETWORK_ERROR, errorMessage);
   }
 }
 
@@ -104,10 +135,13 @@ export async function transformStyle(
       prompt: `将图片转换为${styleType}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
       image: imageUrl,
       size: '2K',
+      sequential_image_generation: 'auto',
+      sequential_image_generation_options: {
+        max_images: 1
+      },
+      stream: false,
       response_format: 'url',
-      extra_body: {
-        watermark: true
-      }
+      watermark: false
     };
     
     // 记录请求开始
@@ -157,21 +191,32 @@ export async function transformStyle(
       body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    // 处理响应
+    const responseData = await response.json();
+    
+    // 检查是否存在error字段（火山方舟API错误格式）
+    if (responseData.error) {
       const apiError = new ApiError(
-        errorData.code || ERROR_CODES.API_ERROR,
-        errorData.message || ERROR_MESSAGES.API_ERROR
+        responseData.error.code || ERROR_CODES.API_ERROR,
+        responseData.error.message || ERROR_MESSAGES.API_ERROR
       );
       // 记录错误日志
       logApi('transformStyle', VOLC_ENGINE_IMAGES_ENDPOINT, requestBody, null, apiError);
       throw apiError;
     }
     
-    // 处理响应
-    const responseData = await response.json();
+    // 同时检查HTTP状态码
+    if (!response.ok) {
+      const apiError = new ApiError(
+        ERROR_CODES.API_ERROR,
+        ERROR_MESSAGES.API_ERROR
+      );
+      // 记录错误日志
+      logApi('transformStyle', VOLC_ENGINE_IMAGES_ENDPOINT, requestBody, null, apiError);
+      throw apiError;
+    }
     
-    // 验证响应结构
+    // 验证响应结构，确保符合火山方舟API的响应格式
     if (!responseData.data || !Array.isArray(responseData.data) || responseData.data.length === 0 || !responseData.data[0].url) {
       const error = new ApiError(ERROR_CODES.INVALID_RESPONSE, ERROR_MESSAGES.INVALID_RESPONSE);
       logApi('transformStyle', VOLC_ENGINE_IMAGES_ENDPOINT, requestBody, responseData, error);
@@ -189,11 +234,42 @@ export async function transformStyle(
       responseTime: endTime - startTime,
       message: SUCCESS_MESSAGES.IMAGE_TRANSFORM_SUCCESS
     };
-  } catch (error) {
+  } catch (error: any) {
     if (error instanceof ApiError) {
+      // 根据火山方舟API错误码提供更友好的错误信息
+      const errorMap: Record<string, string> = {
+        'AuthenticationError': 'API密钥无效或已过期，请检查您的密钥设置',
+        'InvalidParameter': '请求参数无效，请检查输入内容',
+        'MissingParameter': '缺少必要参数，请确保所有必填项都已填写',
+        'SensitiveContentDetected': '输入内容可能包含敏感信息，请更换其他内容',
+        'InputImageSensitiveContentDetected': '输入图片可能包含敏感信息，请更换其他图片',
+        'InputTextSensitiveContentDetected': '输入文本可能包含敏感信息，请更换其他文本',
+        'OutputImageSensitiveContentDetected': '生成的图像可能包含敏感信息，请更换输入内容后重试',
+        'QuotaExceeded': 'API调用次数已达上限，请稍后再试或联系管理员',
+        'InvalidRequest': '请求无效，请检查参数格式',
+        'ServiceUnavailable': '服务暂时不可用，请稍后再试'
+      };
+      
+      // 如果错误码在映射中存在，使用更友好的错误信息
+      if (errorMap[error.code]) {
+        error.message = errorMap[error.code];
+      }
+      
       throw error;
     }
-    throw new ApiError(ERROR_CODES.NETWORK_ERROR, ERROR_MESSAGES.NETWORK_ERROR);
+    
+    // 处理不同类型的网络错误
+    let errorMessage = ERROR_MESSAGES.NETWORK_ERROR;
+    
+    if (error instanceof TypeError) {
+      // 通常是网络连接问题或域名解析失败
+      errorMessage = '网络连接失败，请检查您的网络设置或稍后再试';
+    } else if (typeof error === 'object' && error !== null && error.name === 'NetworkError') {
+      // 显式的网络错误
+      errorMessage = '网络请求被中断，请检查网络连接后重试';
+    }
+    
+    throw new ApiError(ERROR_CODES.NETWORK_ERROR, errorMessage);
   }
 }
 
@@ -255,13 +331,16 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
     // 构建请求体，使用火山方舟OpenAI接口模式
     const requestBody = {
       model: MODELS.VOLC_ENGINE_IMAGE_MODEL,
-      prompt: `将图片转换为${styleId}风格的艺术作品`,
+      prompt: `将图片转换为${styleId}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
       image: imageBase64,
       size: '2K',
+      sequential_image_generation: 'auto',
+      sequential_image_generation_options: {
+        max_images: 1
+      },
+      stream: false,
       response_format: 'url',
-      extra_body: {
-        watermark: true
-      }
+      watermark: false
     };
 
     const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
@@ -273,15 +352,24 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
       body: JSON.stringify(requestBody)
     });
 
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
+    // 先解析响应数据
+    const data = await response.json();
+    
+    // 检查是否存在error字段（火山方舟API错误格式）
+    if (data.error) {
       throw new ApiError(
-        errorData.code || ERROR_CODES.API_ERROR,
-        errorData.message || ERROR_MESSAGES.API_ERROR
+        data.error.code || ERROR_CODES.API_ERROR,
+        data.error.message || ERROR_MESSAGES.API_ERROR
       );
     }
-
-    const data = await response.json();
+    
+    // 同时检查HTTP状态码
+    if (!response.ok) {
+      throw new ApiError(
+        ERROR_CODES.API_ERROR,
+        ERROR_MESSAGES.API_ERROR
+      );
+    }
     return data;
   } catch (error) {
     if (error instanceof ApiError) {
