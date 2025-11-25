@@ -54,18 +54,26 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
 // API_KEY 验证函数
 export async function verifyApiKey(apiKey: string): Promise<boolean> {
   try {
-    // 临时存储API_KEY用于验证
-    localStorage.setItem(API_CONFIG.STORAGE_KEYS.API_KEY, apiKey);
+    // 检查是否以sk-或sk:开头
+    if (apiKey.startsWith('sk-') || apiKey.startsWith('sk:')) {
+      // 处理前缀：如果以sk:开头，则去除前缀
+      const processedKey = apiKey.startsWith('sk:') ? apiKey.slice(3) : apiKey;
+      
+      // 存储处理后的API_KEY用于验证
+      localStorage.setItem(API_CONFIG.STORAGE_KEYS.API_KEY, processedKey);
+      
+      // 实际项目中应该调用验证端点
+      // const response = await fetchApi('/verify', {
+      //   method: 'POST',
+      //   body: JSON.stringify({ apiKey: processedKey }),
+      // });
+      // return response.valid;
+      
+      // 模拟验证过程 - 对于处理后的密钥，检查是否不以sk:开头
+      return !processedKey.startsWith('sk:');
+    }
     
-    // 实际项目中应该调用验证端点
-    // const response = await fetchApi('/verify', {
-    //   method: 'POST',
-    //   body: JSON.stringify({ apiKey }),
-    // });
-    // return response.valid;
-    
-    // 模拟验证过程
-    return apiKey.startsWith('sk-');
+    return false;
   } catch (error) {
     localStorage.removeItem(API_CONFIG.STORAGE_KEYS.API_KEY);
     return false;

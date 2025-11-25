@@ -24,8 +24,8 @@ export default function AuthForm() {
     e.preventDefault();
     
     try {
-      // 统一验证逻辑：检查是否以sk-开头
-      if (apiKey.trim() && apiKey.trim().startsWith('sk-')) {
+      // 统一验证逻辑：检查是否以sk-或sk:开头
+      if (apiKey.trim() && (apiKey.trim().startsWith('sk-') || apiKey.trim().startsWith('sk:'))) {
         const success = await verifyApiKey(apiKey);
         
         if (success) {
@@ -78,7 +78,7 @@ export default function AuthForm() {
               <div className="grid grid-cols-2 gap-4">
                 <Button
                   type="submit"
-                  disabled={status === 'VERIFYING' || !apiKey.trim() || !apiKey.trim().startsWith('sk-')}
+                  disabled={status === 'VERIFYING' || !apiKey.trim() || !(apiKey.trim().startsWith('sk-') || apiKey.trim().startsWith('sk:'))}
                   className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-orange-500 hover:bg-orange-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 disabled:opacity-70"
                 >
                   验证 / VERIFY
@@ -94,7 +94,7 @@ export default function AuthForm() {
               </div>
 
               <div className="flex justify-between items-center mt-2 mb-4">
-                {apiKey.trim() && !apiKey.trim().startsWith('sk-') && (
+                {apiKey.trim() && !(apiKey.trim().startsWith('sk-') || apiKey.trim().startsWith('sk:')) && (
                   <Text className="text-sm text-red-500 dark:text-red-400">
                     API_KEY格式错误
                   </Text>

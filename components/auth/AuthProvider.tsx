@@ -44,14 +44,16 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     setStatus('VERIFYING');
     
     try {
-      // 这里可以添加真实的API_KEY验证逻辑
-      // 暂时使用简单的验证规则
-      if (key.startsWith('sk-')) {
-        setApiKey(key);
+      // 检查是否以sk-或sk:开头
+      if (key.startsWith('sk-') || key.startsWith('sk:')) {
+        // 处理前缀：如果以sk:开头，则去除前缀
+        const processedKey = key.startsWith('sk:') ? key.slice(3) : key;
+        
+        setApiKey(processedKey);
         setIsAuthenticated(true);
         setStatus('SUCCESS');
-        // 保存到localStorage
-        localStorage.setItem('stylegen_api_key', key);
+        // 保存到localStorage（存储去除前缀后的密钥）
+        localStorage.setItem('stylegen_api_key', processedKey);
         return true;
       } else {
         setStatus('ERROR');
