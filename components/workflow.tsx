@@ -5,6 +5,16 @@ import { WORKFLOW_STEPS } from '../data/workflow';
 import { STYLES, CATEGORIES } from '../data/styles';
 import { Button } from '@/components/ui/button';
 
+// 构建正确的图片路径，支持本地和GitHub Pages环境
+const getImagePath = (path: string): string => {
+  // 确保路径以/开头
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // 由于Next.js配置中已经设置了assetPrefix和basePath
+  // 我们直接返回规范化的路径，Next.js会在构建时自动处理
+  return normalizedPath;
+}
+
 export function Workflow() {
   // 状态管理
   const [step, setStep] = useState(1);
@@ -133,7 +143,7 @@ export function Workflow() {
                 >
                   <div className="w-full h-full relative">
                     <img 
-                      src={style.img} 
+                      src={getImagePath(style.img)} 
                       alt={style.name} 
                       className="w-full h-full object-cover"
                     />
