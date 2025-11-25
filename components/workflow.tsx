@@ -30,6 +30,7 @@ export function Workflow() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
   const generationStartTimeRef = useRef<number | null>(null); // 记录生成开始时间，用于计算已用时间
+  const stepContentRef = useRef<HTMLDivElement>(null); // 步骤内容的引用，用于滚动定位
   
   // 计算已用时间
   const getElapsedTime = () => {
@@ -80,7 +81,7 @@ export function Workflow() {
     e.preventDefault();
   };
 
-  // 生成图片
+  // 生成图片 - 同步调用模式
   const generateImage = async () => {
     if (!uploadedImage || !selectedStyle) return;
     
@@ -97,12 +98,7 @@ export function Workflow() {
     // 开始计时
     generationStartTimeRef.current = Date.now();
     
-    // 设置60秒超时时间
-    const timeoutMs = API_CONFIG.REQUEST.TIMEOUT;
-    // 设置轮询间隔
-    const pollingIntervalMs = API_CONFIG.DEFAULT.POLLING_INTERVAL;
-    
-    // 模拟进度更新（每600ms更新一次）
+    // 模拟进度更新（每600ms更新一次，保持UI等待效果）
     progressIntervalRef.current = setInterval(() => {
       setProgress(prev => {
         const newProgress = prev + 1;
@@ -110,69 +106,27 @@ export function Workflow() {
       });
     }, 600);
     
-    // 记录任务ID（用于轮询）
-    let taskId: string | null = null;
-    
     try {
-      // 1. 首先提交转换任务
-      // 注意：这里假设api.ts中的transformStyle函数已经处理了提交任务的逻辑
-      // 并返回任务ID用于后续轮询
-      console.log('提交风格转换任务，等待方舟平台处理...');
+      console.log('开始风格转换任务...');
       
-      // 初始化任务（在实际实现中，应该调用提交任务的API）
-      // 这里简化处理，使用模拟的任务ID
-      taskId = `task_${Date.now()}`;
+      // 直接调用transformStyle函数进行同步风格转换
+      // 根据官方文档，预计完成时间在5秒以内
+      const response = await api.transformStyle(uploadedImage, selectedStyle);
       
-      // 2. 设置轮询和超时逻辑
-      const startTime = Date.now();
-      let pollingTimer: NodeJS.Timeout | null = null;
+      console.log(`图片生成完成，响应时间: ${response.responseTime}ms`);
       
-      // 创建一个Promise来处理轮询和超时
-      await new Promise<void>((resolve, reject) => {
-        // 轮询函数
-        const checkStatus = async () => {
-          const elapsedTime = Date.now() - startTime;
-          
-          // 检查是否超时
-          if (elapsedTime >= timeoutMs) {
-            if (pollingTimer) clearInterval(pollingTimer);
-            reject(new ApiError('TIMEOUT', '图片转换超时，请稍后重试'));
-            return;
-          }
-          
-          try {
-            // 在实际实现中，这里应该调用检查任务状态的API
-            // 这里简化处理，模拟轮询过程
-            console.log(`轮询任务状态: ${taskId}`);
-            
-            // 模拟随机成功率（80%的概率在15-45秒内成功）
-            const randomSuccess = Math.random() < 0.2; // 每次轮询有20%的概率成功
-            const hasElapsedEnoughTime = elapsedTime >= 15000; // 至少等待15秒
-            
-            if (randomSuccess && hasElapsedEnoughTime) {
-              // 模拟成功获取结果
-              console.log('任务完成，获取转换结果');
-              
-              // 调用transformStyle获取最终结果
-              const response = await api.transformStyle(uploadedImage, selectedStyle, {});
-              
-              setGeneratedImage(response.generatedImage);
-              if (pollingTimer) clearInterval(pollingTimer);
-              resolve();
-            }
-          } catch (pollingErr) {
-            console.error('轮询任务状态失败:', pollingErr);
-          }
-        };
-        
-        // 立即执行一次，然后开始轮询
-        checkStatus();
-        pollingTimer = setInterval(checkStatus, pollingIntervalMs);
-      });
+      // 设置生成的图片
+      if (response.success && response.generatedImage) {
+        setGeneratedImage(response.generatedImage);
+      } else {
+        throw new Error(response.message || '未获取到生成的图片');
+      }
     } catch (err) {
       console.error('图片生成失败:', err);
       if (err instanceof ApiError) {
         setError(err.message);
+      } else if (err instanceof Error) {
+        setError(err.message || '生成图片时发生错误，请稍后重试');
       } else {
         setError('生成图片时发生错误，请稍后重试');
       }
@@ -388,6 +342,15 @@ export function Workflow() {
     } else if (step === 2 && selectedStyle) {
       setStep(3);
       generateImage();
+      // 等待状态更新后滚动到加载区域
+      setTimeout(() => {
+        if (stepContentRef.current) {
+          stepContentRef.current.scrollIntoView({ 
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100);
     } else if (step === 3 && generatedImage) {
       setStep(4);
     }
@@ -400,6 +363,51 @@ export function Workflow() {
     }
   };
 
+  // 下载图片功能
+  const handleDownloadImage = async () => {
+    if (!generatedImage) return;
+    
+    try {
+      // 为下载的图片生成文件名
+      const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+      const styleName = selectedStyle || 'unknown-style';
+      const filename = `ai-stylegen-${styleName}-${timestamp}.jpg`;
+      
+      // 如果是本地路径或演示模式的图片，直接下载
+      if (generatedImage.startsWith('/')) {
+        const downloadLink = document.createElement('a');
+        downloadLink.href = generatedImage;
+        downloadLink.download = filename;
+        downloadLink.click();
+        return;
+      }
+      
+      // 对于远程URL，先获取blob对象再下载
+      const response = await fetch(generatedImage);
+      if (!response.ok) {
+        throw new Error('无法下载图片');
+      }
+      
+      const blob = await response.blob();
+      const objectUrl = URL.createObjectURL(blob);
+      
+      const downloadLink = document.createElement('a');
+      downloadLink.href = objectUrl;
+      downloadLink.download = filename;
+      document.body.appendChild(downloadLink);
+      downloadLink.click();
+      
+      // 清理
+      document.body.removeChild(downloadLink);
+      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
+      
+      console.log(`图片已下载: ${filename}`);
+    } catch (err) {
+      console.error('下载图片失败:', err);
+      // 可以添加错误提示，但不中断流程
+    }
+  };
+  
   // 重置生成
   const handleReset = () => {
     setStep(1);
@@ -458,7 +466,10 @@ export function Workflow() {
         </div>
 
         {/* 步骤内容 */}
-        <div className="bg-background border-2 border-border p-6 md:p-8 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]">
+        <div 
+          ref={stepContentRef}
+          className="bg-background border-2 border-border p-6 md:p-8 mb-8 shadow-[4px_4px_0px_0px_rgba(0,0,0,0.1)]"
+        >
           {renderStepContent()}
         </div>
 
@@ -498,8 +509,9 @@ export function Workflow() {
               >
                 {step === 3 ? '开始生成' : '下一步'}
               </Button>
-            ) : (
+            ) : generatedImage && (
               <Button
+                onClick={handleDownloadImage}
                 className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90 transition-all hover:shadow-[4px_4px_0px_0px_rgba(0,0,0,0.2)]"
               >
                 下载图片

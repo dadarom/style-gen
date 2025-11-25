@@ -4,6 +4,46 @@
 
 本文档详细说明AI风格生成器项目中的配置管理系统，该系统将所有API相关的配置集中在一个地方进行管理，便于维护和修改。
 
+## 环境变量配置
+
+### 1. 环境变量文件设置
+
+项目支持通过以下文件设置环境变量（按优先级从高到低）：
+- `.env.local` - 本地开发环境使用，不会被git跟踪
+- `.env.development` - 开发环境使用
+- `.env.production` - 生产环境使用
+- `.env` - 全局环境变量
+
+### 2. 配置步骤
+
+1. 复制示例文件创建本地环境变量文件：
+   ```bash
+   cp .env.example .env.local
+   ```
+
+2. 编辑`.env.local`文件，填入您的火山方舟API密钥：
+   ```
+   NEXT_PUBLIC_DEFAULT_API_KEY=your-actual-volc-ark-api-key
+   ```
+
+3. 重启开发服务器以应用新的环境变量：
+   ```bash
+   npm run dev
+   ```
+
+### 3. 可用环境变量
+
+| 环境变量名 | 说明 | 默认值 | 是否必须 |
+|---------|-----|-------|--------|
+| NEXT_PUBLIC_DEFAULT_API_KEY | 火山方舟API密钥 | test-key-for-demo | 推荐配置 |
+| NEXT_PUBLIC_DEBUG_MODE | 启用调试模式 | false | 可选 |
+
+### 4. 注意事项
+
+- 所有以`NEXT_PUBLIC_`开头的环境变量都可以在客户端JavaScript代码中访问
+- 生产环境中请确保使用有效的API密钥，而不是默认的测试密钥
+- `.env.local`文件已经在`.gitignore`中配置为不被跟踪，请不要提交实际的API密钥到代码仓库
+
 ## 配置文件结构
 
 项目的配置文件位于 `lib/config.ts`，主要包含以下几部分配置：
