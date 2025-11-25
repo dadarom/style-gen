@@ -2,6 +2,10 @@
 
 // API基础URL配置
 export const API_CONFIG = {
+  // 火山方舟API配置
+  VOLC_ENGINE_API_BASE_URL: 'https://ark.cn-beijing.volces.com/api/v3',
+  VOLC_ENGINE_IMAGES_ENDPOINT: '/images/generations',
+  
   // NewAPI相关配置
   NEW_API_BASE_URL: 'https://api.newapi.pro/v1/chat/completions',
   NEWAPI_BASE_URL: 'https://api.newapi.pro/v1',
@@ -18,6 +22,7 @@ export const API_CONFIG = {
   MODELS: {
     VOLC_ENGINE_MODEL: 'seedream4.0',
     VOLC_ENGINE_FULL_MODEL: 'volcengine/seed-dream-4.0',
+    VOLC_ENGINE_IMAGE_MODEL: 'doubao-seedream-4-0-250828', // 火山方舟图文生图模型ID
   },
   
   // 请求配置

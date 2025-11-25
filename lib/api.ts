@@ -2,7 +2,7 @@
 import { API_CONFIG, ERROR_CODES, ERROR_MESSAGES, SUCCESS_MESSAGES } from './config';
 
 // API配置常量引用
-const { NEW_API_BASE_URL, API_BASE_URL, NEWAPI_BASE_URL, MODELS } = API_CONFIG;
+const { VOLC_ENGINE_API_BASE_URL, VOLC_ENGINE_IMAGES_ENDPOINT, API_BASE_URL, MODELS } = API_CONFIG;
 
 // API 错误类
 export class ApiError extends Error {
@@ -88,25 +88,16 @@ export async function transformStyle(
   }
   
   try {
-    // 准备请求数据
+    // 准备请求数据，符合火山方舟OpenAI接口模式
     const requestBody = {
-      model: MODELS.VOLC_ENGINE_FULL_MODEL, // 火山引擎SeedDream4.0模型
-      messages: [
-        {
-          role: 'system',
-          content: `你是一个专业的图片风格转换助手，请根据用户提供的风格类型将图片转换为相应的艺术风格。风格类型: ${styleType}。请保持原始图片的主体内容不变，只转换艺术风格。`
-        },
-        {
-          role: 'user',
-          content: [
-            { type: 'text', text: `请将这张图片转换为${styleType}风格` },
-            { type: 'image_url', image_url: { url: imageUrl } }
-          ]
-        }
-      ],
-      temperature: 0.7,
-      max_tokens: 2000,
-      stream: true // 启用流式响应
+      model: MODELS.VOLC_ENGINE_IMAGE_MODEL, // 火山方舟图文生图模型ID
+      prompt: `将图片转换为${styleType}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
+      image: imageUrl,
+      size: '2K',
+      response_format: 'url',
+      extra_body: {
+        watermark: true
+      }
     };
     
     // 移除进度模拟逻辑，现在由轮询机制控制进度
@@ -115,8 +106,8 @@ export async function transformStyle(
     let resultImage = imageUrl; // 默认返回原图
     
     try {
-      // 发送请求到NewAPI
-      const response = await fetch(NEW_API_BASE_URL, {
+      // 发送请求到火山方舟API
+      const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -150,51 +141,14 @@ export async function transformStyle(
         );
       }
       
-      // 处理流式响应
-      const reader = response.body?.getReader();
-      const decoder = new TextDecoder();
+      // 处理标准JSON响应
+      const responseData = await response.json();
       
-      if (!reader) {
-        throw new ApiError(ERROR_CODES.STREAM_ERROR, ERROR_MESSAGES.STREAM_ERROR);
-      }
-      
-      let fullResponse = '';
-      
-      try {
-        while (true) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          
-          const chunk = decoder.decode(value, { stream: true });
-          fullResponse += chunk;
-          
-          // 解析SSE格式的响应
-          const lines = chunk.split('\n');
-          for (const line of lines) {
-            if (line.startsWith('data:')) {
-              const data = line.substring(5).trim();
-              if (data === '[DONE]') break;
-              
-              try {
-                const json = JSON.parse(data);
-                if (json.choices && json.choices[0] && json.choices[0].message && json.choices[0].message.content) {
-                  // 提取生成的图片URL（假设响应中包含图片URL）
-                  const content = json.choices[0].message.content;
-                  // 这里需要根据实际的响应格式来提取图片URL
-                  // 示例：假设响应中包含markdown格式的图片
-                  const imageMatch = content.match(/!\[.*?\]\((.*?)\)/);
-                  if (imageMatch && imageMatch[1]) {
-                    resultImage = imageMatch[1]; // 更新结果图片
-                  }
-                }
-              } catch (e) {
-                // 忽略解析错误
-              }
-            }
-          }
-        }
-      } finally {
-        // 轮询机制会处理最终的进度更新
+      // 检查响应格式是否正确
+      if (responseData && responseData.data && Array.isArray(responseData.data) && responseData.data.length > 0 && responseData.data[0].url) {
+        resultImage = responseData.data[0].url; // 从响应中提取图片URL
+      } else {
+        throw new ApiError(ERROR_CODES.INVALID_RESPONSE, ERROR_MESSAGES.INVALID_RESPONSE);
       }
       
       // 确保进度达到100%
@@ -227,22 +181,22 @@ export async function getAvailableStyles() {
   return fetchApi('/styles');
 }
 
-// 通过NewAPI调用火山引擎生成图片
+// 通过火山方舟API调用生成图片
 async function callNewApiForImageGeneration(imageBase64: string, styleId: string, newApiKey: string) {
   try {
-    // 构建请求体，根据SeedDream4.0的要求
+    // 构建请求体，使用火山方舟OpenAI接口模式
     const requestBody = {
-      model: MODELS.VOLC_ENGINE_MODEL,
+      model: MODELS.VOLC_ENGINE_IMAGE_MODEL,
       prompt: `将图片转换为${styleId}风格的艺术作品`,
       image: imageBase64,
-      params: {
-        style_id: styleId,
-        quality: "high",
-        steps: 30
+      size: '2K',
+      response_format: 'url',
+      extra_body: {
+        watermark: true
       }
     };
 
-    const response = await fetch(`${NEWAPI_BASE_URL}/chat/completions`, {
+    const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -281,12 +235,10 @@ export async function generateStyledImage(imageBase64: string, styleId: string):
     // 调用NewAPI生成图片
     const result = await callNewApiForImageGeneration(imageBase64, styleId, newApiKey);
 
-    // 从结果中提取生成的图片URL或base64
-    // 这里需要根据实际返回格式调整
-    if (result.data && result.data.image_url) {
-      return result.data.image_url;
-    } else if (result.data && result.data.image_base64) {
-      return `data:image/png;base64,${result.data.image_base64}`;
+    // 从结果中提取生成的图片URL
+    // 根据火山方舟API返回格式，图片URL在data[0].url中
+    if (result.data && Array.isArray(result.data) && result.data.length > 0 && result.data[0].url) {
+      return result.data[0].url;
     } else {
       throw new ApiError(ERROR_CODES.INVALID_RESPONSE, ERROR_MESSAGES.INVALID_RESPONSE);
     }
