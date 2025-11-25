@@ -33,7 +33,7 @@ export const API_CONFIG = {
   
   // 默认配置
   DEFAULT: {
-    API_KEY: 'test-key-for-demo', // 演示用的默认密钥
+    API_KEY: process.env.NEXT_PUBLIC_DEFAULT_API_KEY || 'test-key-for-demo', // 从环境变量读取，默认值作为后备
     PROGRESS_UPDATE_INTERVAL: 600, // 进度更新间隔(ms)
     POLLING_INTERVAL: 5000, // 轮询间隔(ms)
     MAX_PROGRESS: 95, // 最大模拟进度

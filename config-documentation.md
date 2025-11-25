@@ -22,7 +22,7 @@
 | `MODELS.VOLC_ENGINE_FULL_MODEL` | string | 火山引擎完整模型名称 | `volcengine/seed-dream-4.0` |
 | `REQUEST.TIMEOUT` | number | 请求超时时间（毫秒） | `60000` |
 | `REQUEST.RETRY_TIMES` | number | 请求重试次数 | `3` |
-| `DEFAULT.API_KEY` | string | 默认演示API密钥 | `test-key-for-demo` |
+| `DEFAULT.API_KEY` | string | 默认演示API密钥，从环境变量NEXT_PUBLIC_DEFAULT_API_KEY读取，默认为'test-key-for-demo' | `process.env.NEXT_PUBLIC_DEFAULT_API_KEY || 'test-key-for-demo'` |
 | `DEFAULT.PROGRESS_UPDATE_INTERVAL` | number | 进度更新间隔（毫秒） | `600` |
 | `DEFAULT.POLLING_INTERVAL` | number | 轮询间隔（毫秒） | `5000` |
 | `DEFAULT.MAX_PROGRESS` | number | 最大模拟进度（%） | `95` |
