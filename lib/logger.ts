@@ -98,15 +98,58 @@ export class Logger {
   private saveLogs(): void {
     if (!this.config.enabled || !this.initialized) return;
     
-    try {
-      // 只有在浏览器环境中才尝试使用localStorage
-      if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
-        localStorage.setItem(this.config.storageKey, JSON.stringify(this.logs));
-      }
-    } catch (error) {
-      console.error('保存日志失败:', error);
-      // 保存失败时不中断流程
+    // 限制日志数量为最大100条
+    if (this.logs.length > 100) {
+      this.logs = this.logs.slice(-100);
     }
+    
+    // 智能轮换机制：多级失败重试策略
+    const saveWithRetry = (attempt = 1, maxRetries = 3): boolean => {
+      try {
+        // 只有在浏览器环境中才尝试使用localStorage
+        if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+          // 尝试保存日志
+          localStorage.setItem(this.config.storageKey, JSON.stringify(this.logs));
+          return true;
+        }
+        return false;
+      } catch (error) {
+        // 第一级重试：减少日志数量
+        if (attempt === 1 && this.logs.length > 50) {
+          console.warn('日志保存失败，尝试减少日志数量到50条...');
+          this.logs = this.logs.slice(-50);
+          return saveWithRetry(attempt + 1, maxRetries);
+        }
+        // 第二级重试：减少到20条关键日志（只保留error和warn）
+        else if (attempt === 2) {
+          console.warn('日志保存失败，尝试只保留关键日志...');
+          this.logs = this.logs.filter(log => 
+            log.level === LogLevel.ERROR || log.level === LogLevel.WARN
+          ).slice(-20);
+          return saveWithRetry(attempt + 1, maxRetries);
+        }
+        // 最后重试：清空旧日志只保留最新10条
+        else if (attempt === 3) {
+          console.warn('日志保存失败，尝试清空历史日志...');
+          this.logs = this.logs.slice(-10);
+          try {
+            if (typeof window !== 'undefined' && typeof localStorage !== 'undefined') {
+              localStorage.setItem(this.config.storageKey, JSON.stringify(this.logs));
+              return true;
+            }
+          } catch (finalError) {
+            console.error('日志保存最终失败，localStorage可能已达配额上限:', finalError);
+          }
+        }
+        
+        // 所有重试都失败，记录错误但不中断流程
+        console.error('日志保存失败:', error);
+        return false;
+      }
+    };
+    
+    // 执行带重试的保存操作
+    saveWithRetry();
   }
 
   // 记录日志的通用方法

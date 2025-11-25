@@ -417,29 +417,77 @@ export function Workflow() {
         return;
       }
       
-      // 对于远程URL，先获取blob对象再下载
-      const response = await fetch(generatedImage);
-      if (!response.ok) {
-        throw new Error('无法下载图片');
+      // 对于远程URL，使用带超时控制的fetch请求
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 15000); // 15秒超时
+      
+      try {
+        // 添加CORS支持和超时控制
+        const response = await fetch(generatedImage, {
+          signal: controller.signal,
+          credentials: 'include', // 包含凭证以支持跨域
+          headers: {
+            'Accept': 'image/*'
+          }
+        });
+        
+        clearTimeout(timeoutId); // 清除超时定时器
+        
+        if (!response.ok) {
+          throw new Error(`下载图片失败: HTTP状态码 ${response.status} - ${response.statusText}`);
+        }
+        
+        const blob = await response.blob();
+        const objectUrl = URL.createObjectURL(blob);
+        
+        const downloadLink = document.createElement('a');
+        downloadLink.href = objectUrl;
+        downloadLink.download = filename;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        
+        // 清理资源
+        try {
+          document.body.removeChild(downloadLink);
+        } catch (e) {
+          // 忽略DOM操作错误
+        }
+        
+        // 延迟清理以确保下载完成
+        setTimeout(() => {
+          try {
+            URL.revokeObjectURL(objectUrl);
+          } catch (e) {
+            // 忽略资源清理错误
+          }
+        }, 1000);
+        
+        console.log(`图片已下载: ${filename}`);
+      } catch (fetchError: any) {
+        clearTimeout(timeoutId); // 清理超时定时器
+        
+        // 处理超时错误
+        if (fetchError.name === 'AbortError') {
+          throw new Error('下载图片超时，请稍后重试');
+        }
+        
+        // 网络错误时尝试直接下载
+        if (fetchError.message.includes('Failed to fetch')) {
+          console.warn('网络错误，尝试直接下载...');
+          const directLink = document.createElement('a');
+          directLink.href = generatedImage;
+          directLink.download = filename;
+          directLink.click();
+          return;
+        }
+        
+        // 重新抛出其他错误
+        throw fetchError;
       }
-      
-      const blob = await response.blob();
-      const objectUrl = URL.createObjectURL(blob);
-      
-      const downloadLink = document.createElement('a');
-      downloadLink.href = objectUrl;
-      downloadLink.download = filename;
-      document.body.appendChild(downloadLink);
-      downloadLink.click();
-      
-      // 清理
-      document.body.removeChild(downloadLink);
-      setTimeout(() => URL.revokeObjectURL(objectUrl), 100);
-      
-      console.log(`图片已下载: ${filename}`);
-    } catch (err) {
+    } catch (err: any) {
       console.error('下载图片失败:', err);
-      // 可以添加错误提示，但不中断流程
+      // 显示用户友好的错误提示
+      window.alert(`下载失败: ${err.message || '未知错误'}。请检查网络连接或稍后重试。`);
     }
   };
   

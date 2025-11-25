@@ -43,8 +43,8 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
     }
 
     return await response.json();
-  } catch (error: any) {
-    if (error instanceof ApiError) {
+    } catch (error: any) {
+      if (error instanceof ApiError) {
       // 根据火山方舟API错误码提供更友好的错误信息
       const errorMap: Record<string, string> = {
         'AuthenticationError': 'API密钥无效或已过期，请检查您的密钥设置',
@@ -119,6 +119,8 @@ export async function transformStyle(
   styleType: string,
   params: Record<string, any> = {}
 ) {
+  let timeoutId: NodeJS.Timeout | undefined;
+  
   try {
     // 从localStorage获取API密钥
     let apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
@@ -181,15 +183,22 @@ export async function transformStyle(
       };
     }
     
-    // 生产模式：直接调用火山方舟API（同步调用）
+    // 调用火山方舟API生成图片
+    const controller = new AbortController();
+    timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
     });
+    
+    // 清除超时定时器
+    clearTimeout(timeoutId);
 
     // 处理响应
     const responseData = await response.json();
@@ -235,6 +244,16 @@ export async function transformStyle(
       message: SUCCESS_MESSAGES.IMAGE_TRANSFORM_SUCCESS
     };
   } catch (error: any) {
+    // 清除超时定时器
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    
+    // 处理超时错误
+    if (error.name === 'AbortError') {
+      throw new ApiError(ERROR_CODES.TIMEOUT, '请求超时，请稍后再试');
+    }
+    
     if (error instanceof ApiError) {
       // 根据火山方舟API错误码提供更友好的错误信息
       const errorMap: Record<string, string> = {
@@ -275,6 +294,7 @@ export async function transformStyle(
 
 // 查询任务状态函数
 export async function getTaskStatus(taskId: string) {
+  let timeoutId: NodeJS.Timeout | undefined;
   try {
     // 从localStorage获取API密钥
     const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
@@ -313,9 +333,19 @@ export async function getTaskStatus(taskId: string) {
       errorMessage: responseData.error?.message || null
     };
   } catch (error) {
+    // 清除超时定时器
+    clearTimeout(timeoutId);
+    
     if (error instanceof ApiError) {
       throw error;
     }
+    
+    // 检查是否是超时错误
+    const errorObj = error as Error;
+    if (errorObj.name === 'AbortError') {
+      throw new ApiError(ERROR_CODES.TIMEOUT, '请求超时，请稍后再试');
+    }
+    
     throw new ApiError(ERROR_CODES.NETWORK_ERROR, ERROR_MESSAGES.NETWORK_ERROR);
   }
 }
@@ -327,6 +357,7 @@ export async function getAvailableStyles() {
 
 // 通过火山方舟API调用生成图片
 async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId: string, apiKey: string) {
+  let timeoutId: NodeJS.Timeout | undefined;
   try {
     // 构建请求体，使用火山方舟OpenAI接口模式
     const requestBody = {
@@ -343,14 +374,22 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
       watermark: false
     };
 
+    // 创建超时控制器，设置5秒超时
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    
     const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(requestBody)
+      body: JSON.stringify(requestBody),
+      signal: controller.signal
     });
+    
+    // 清除超时定时器
+    clearTimeout(timeoutId);
 
     // 先解析响应数据
     const data = await response.json();
