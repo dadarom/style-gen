@@ -6,6 +6,8 @@ import { STYLES, CATEGORIES } from '../data/styles';
 import { Button } from '@/components/ui/button';
 import { api, ApiError } from '../lib/api';
 import { API_CONFIG } from '../lib/config';
+import { DEBUG_CONFIG } from '../lib/config';
+import { debug, performanceMonitor, stateTracer } from '../lib/logger';
 
 // 构建正确的图片路径，支持本地和GitHub Pages环境
 const getImagePath = (path: string): string => {
@@ -85,6 +87,16 @@ export function Workflow() {
   const generateImage = async () => {
     if (!uploadedImage || !selectedStyle) return;
     
+    // 记录状态更新
+    stateTracer.trace('Workflow', 'loading', false, true);
+    
+    // 开始性能监控
+    performanceMonitor.startTime('generateImage');
+    
+    if (DEBUG_CONFIG.IS_DEBUG_MODE) {
+      debug('开始图片生成流程', { uploadedImage: !!uploadedImage, selectedStyle }, 'workflow');
+    }
+    
     setLoading(true);
     setProgress(0);
     setError(null);
@@ -131,10 +143,25 @@ export function Workflow() {
         setError('生成图片时发生错误，请稍后重试');
       }
     } finally {
+      // 结束性能监控并记录
+      performanceMonitor.endTime('generateImage');
+      
+      // 记录状态更新
+      stateTracer.trace('Workflow', 'loading', true, false);
+      stateTracer.trace('Workflow', 'progress', progress, 100);
+      
       // 清除所有定时器
       if (progressIntervalRef.current) {
         clearInterval(progressIntervalRef.current);
         progressIntervalRef.current = null;
+      }
+      
+      if (DEBUG_CONFIG.IS_DEBUG_MODE) {
+        debug('图片生成流程完成', { 
+          success: !error, 
+          generatedImageExists: !!generatedImage,
+          progress: 100 
+        }, 'workflow');
       }
       
       setProgress(100);
@@ -338,8 +365,12 @@ export function Workflow() {
   // 处理下一步
   const handleNext = () => {
     if (step === 1 && uploadedImage) {
+      // 记录状态更新
+      stateTracer.trace('Workflow', 'step', step, 2);
       setStep(2);
     } else if (step === 2 && selectedStyle) {
+      // 记录状态更新
+      stateTracer.trace('Workflow', 'step', step, 3);
       setStep(3);
       generateImage();
       // 等待状态更新后滚动到加载区域
@@ -352,6 +383,8 @@ export function Workflow() {
         }
       }, 100);
     } else if (step === 3 && generatedImage) {
+      // 记录状态更新
+      stateTracer.trace('Workflow', 'step', step, 4);
       setStep(4);
     }
   };
@@ -359,6 +392,8 @@ export function Workflow() {
   // 处理上一步
   const handlePrevious = () => {
     if (step > 1) {
+      // 记录状态更新
+      stateTracer.trace('Workflow', 'step', step, step - 1);
       setStep(step - 1);
     }
   };

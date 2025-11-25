@@ -1,4 +1,5 @@
 // 日志管理器模块 - 支持Next.js环境
+import { DEBUG_CONFIG } from './config';
 
 // 日志级别枚举
 export enum LogLevel {
@@ -25,12 +26,29 @@ interface LoggerConfig {
   logLevel: LogLevel;
 }
 
+// 从DEBUG_CONFIG获取日志级别
+const getDefaultLogLevel = (): LogLevel => {
+  const debugLogLevel = DEBUG_CONFIG.LOG_LEVEL.toLowerCase();
+  switch (debugLogLevel) {
+    case 'debug':
+      return LogLevel.DEBUG;
+    case 'info':
+      return LogLevel.INFO;
+    case 'warn':
+      return LogLevel.WARN;
+    case 'error':
+      return LogLevel.ERROR;
+    default:
+      return LogLevel.INFO;
+  }
+};
+
 // 默认配置
 const DEFAULT_CONFIG: LoggerConfig = {
   maxLogEntries: 1000,
   storageKey: 'ai_stylegen_logs',
-  enabled: true,
-  logLevel: LogLevel.INFO
+  enabled: Boolean(DEBUG_CONFIG.IS_DEBUG_MODE) || true,
+  logLevel: getDefaultLogLevel()
 };
 
 // 检查是否在浏览器环境
@@ -288,19 +306,34 @@ export class Logger {
     error?: Error,
     duration?: number
   ): void {
-    const data = {
+    // 根据debug配置决定日志级别和详细程度
+    const logLevel = DEBUG_CONFIG.OPTIONS.VERBOSE_API_LOGS ? LogLevel.DEBUG : LogLevel.INFO;
+    
+    // 构建日志数据
+    const baseData = {
       endpoint,
       method,
-      requestData,
-      responseData,
-      error: error?.message,
       duration: `${duration || 0}ms`
     };
+    
+    // 如果启用详细日志，则包含完整的请求和响应数据
+    const data = DEBUG_CONFIG.OPTIONS.VERBOSE_API_LOGS ? {
+      ...baseData,
+      requestData,
+      responseData: error ? null : responseData,
+      error: error?.message,
+      errorStack: error?.stack,
+      timestamp: new Date().toISOString()
+    } : baseData;
     
     if (error) {
       this.error(`API请求失败: ${method} ${endpoint}`, data, 'api');
     } else {
-      this.info(`API请求成功: ${method} ${endpoint}`, data, 'api');
+      if (logLevel === LogLevel.DEBUG) {
+        this.debug(`API请求成功: ${method} ${endpoint}`, data, 'api');
+      } else {
+        this.info(`API请求成功: ${method} ${endpoint}`, data, 'api');
+      }
     }
   }
 }
@@ -331,3 +364,62 @@ export const error = (message: string, data?: Record<string, any>, context?: str
 
 // 导出日志管理器实例
 export default logger;
+
+// 性能监控工具 - 仅在debug模式下启用
+export const performanceMonitor = {
+  // 开始计时
+  startTime: (label: string): void => {
+    if (DEBUG_CONFIG.IS_DEBUG_MODE && DEBUG_CONFIG.OPTIONS.PERFORMANCE_MONITORING) {
+      if (typeof window !== 'undefined' && window.performance) {
+        window.performance.mark(`start_${label}`);
+      }
+    }
+  },
+  
+  // 结束计时并记录
+  endTime: (label: string): void => {
+    if (DEBUG_CONFIG.IS_DEBUG_MODE && DEBUG_CONFIG.OPTIONS.PERFORMANCE_MONITORING) {
+      if (typeof window !== 'undefined' && window.performance) {
+        try {
+          window.performance.mark(`end_${label}`);
+          window.performance.measure(label, `start_${label}`, `end_${label}`);
+          
+          const measures = window.performance.getEntriesByName(label);
+          if (measures && measures.length > 0) {
+            const duration = measures[measures.length - 1].duration;
+            logger.debug(`性能监控: ${label} - ${duration.toFixed(2)}ms`, { duration }, 'performance');
+          }
+        } catch (error) {
+          logger.error('性能监控失败', { label, error: error instanceof Error ? error.message : 'Unknown error' }, 'performance');
+        }
+      }
+    }
+  },
+  
+  // 清除所有性能标记
+  clearMarks: (): void => {
+    if (DEBUG_CONFIG.IS_DEBUG_MODE && DEBUG_CONFIG.OPTIONS.PERFORMANCE_MONITORING) {
+      if (typeof window !== 'undefined' && window.performance) {
+        window.performance.clearMarks();
+        window.performance.clearMeasures();
+      }
+    }
+  }
+};
+
+// 状态追踪工具 - 仅在debug模式下启用
+export const stateTracer = {
+  // 记录状态更新
+  trace: (component: string, stateName: string, oldValue: any, newValue: any): void => {
+    if (DEBUG_CONFIG.IS_DEBUG_MODE && DEBUG_CONFIG.OPTIONS.TRACE_STATE_UPDATES) {
+      const data = {
+        component,
+        stateName,
+        oldValue: JSON.stringify(oldValue),
+        newValue: JSON.stringify(newValue),
+        timestamp: new Date().toISOString()
+      };
+      logger.debug(`状态更新: ${component}.${stateName}`, data, 'state');
+    }
+  }
+};
