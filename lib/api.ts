@@ -114,7 +114,8 @@ export async function transformStyle(
     const startTime = Date.now();
     
     // 演示模式：对于测试密钥或默认密钥，直接返回模拟成功响应
-    const isDemoMode = apiKey === 'test-key-for-demo' || apiKey === API_CONFIG.DEFAULT.API_KEY;
+    // const isDemoMode = apiKey === 'test-key-for-demo' || apiKey === API_CONFIG.DEFAULT.API_KEY;
+    const isDemoMode = apiKey === 'test-key-for-demo';
     
     if (isDemoMode) {
       console.log('运行在演示模式，返回模拟图片转换结果');
