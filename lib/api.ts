@@ -185,7 +185,7 @@ export async function transformStyle(
     
     // 调用火山方舟API生成图片
     const controller = new AbortController();
-    timeoutId = setTimeout(() => controller.abort(), 5000);
+    timeoutId = setTimeout(() => controller.abort(), API_CONFIG.REQUEST.TIMEOUT);
     
     const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
       method: 'POST',
@@ -374,9 +374,9 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
       watermark: false
     };
 
-    // 创建超时控制器，设置5秒超时
+    // 创建超时控制器，使用配置的超时时间
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 5000);
+    const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.REQUEST.TIMEOUT);
     
     const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
       method: 'POST',
