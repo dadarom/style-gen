@@ -14,8 +14,14 @@ const getImagePath = (path: string): string => {
   // 确保路径以/开头
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
-  // 由于Next.js配置中已经设置了assetPrefix和basePath
-  // 我们直接返回规范化的路径，Next.js会在构建时自动处理
+  // 检查是否为生产环境（GitHub Pages）
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // 生产环境下添加basePath
+  if (isProduction) {
+    return `/style-gen${normalizedPath}`;
+  }
+  
   return normalizedPath;
 }
 
