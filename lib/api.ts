@@ -1,5 +1,7 @@
 // 导入配置
 import { API_CONFIG, ERROR_CODES, ERROR_MESSAGES, SUCCESS_MESSAGES } from './config';
+// 导入认证模块
+import { getStoredApiKey, verifyApiKey as verifyApiKeyUtil } from './auth';
 // 导入日志模块
 import logger, { logApi } from './logger';
 
@@ -16,7 +18,7 @@ export class ApiError extends Error {
 
 // 通用请求函数
 async function fetchApi(endpoint: string, options: RequestInit = {}) {
-  const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+  const apiKey = getStoredApiKey();
   
   if (!apiKey) {
     throw new ApiError(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
@@ -84,31 +86,7 @@ async function fetchApi(endpoint: string, options: RequestInit = {}) {
 
 // API_KEY 验证函数
 export async function verifyApiKey(apiKey: string): Promise<boolean> {
-  try {
-    // 检查是否以sk-或sk:开头
-    if (apiKey.startsWith('sk-') || apiKey.startsWith('sk:')) {
-      // 处理前缀：如果以sk:开头，则去除前缀
-      const processedKey = apiKey.startsWith('sk:') ? apiKey.slice(3) : apiKey;
-      
-      // 存储处理后的API_KEY用于验证
-      localStorage.setItem(API_CONFIG.STORAGE_KEYS.API_KEY, processedKey);
-      
-      // 实际项目中应该调用验证端点
-      // const response = await fetchApi('/verify', {
-      //   method: 'POST',
-      //   body: JSON.stringify({ apiKey: processedKey }),
-      // });
-      // return response.valid;
-      
-      // 模拟验证过程 - 对于处理后的密钥，检查是否不以sk:开头
-      return !processedKey.startsWith('sk:');
-    }
-    
-    return false;
-  } catch (error) {
-    localStorage.removeItem(API_CONFIG.STORAGE_KEYS.API_KEY);
-    return false;
-  }
+  return verifyApiKeyUtil(apiKey);
 }
 
 // 使用logger模块提供的API日志记录函数（不再需要本地logApiRequest函数）
@@ -123,7 +101,7 @@ export async function transformStyle(
   
   try {
     // 从localStorage获取API密钥
-    let apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+    let apiKey = getStoredApiKey();
     
     // 使用默认API密钥作为后备（开发/演示模式）
     if (!apiKey) {
@@ -297,7 +275,7 @@ export async function getTaskStatus(taskId: string) {
   let timeoutId: NodeJS.Timeout | undefined;
   try {
     // 从localStorage获取API密钥
-    const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+    const apiKey = getStoredApiKey();
     
     if (!apiKey) {
       throw new ApiError(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
@@ -355,30 +333,15 @@ export async function getAvailableStyles() {
   return fetchApi('/styles');
 }
 
-// 通过火山方舟API调用生成图片
-async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId: string, apiKey: string) {
+// 公共的火山方舟API调用函数
+async function callVolcEngineApi(endpoint: string, requestBody: any, apiKey: string) {
   let timeoutId: NodeJS.Timeout | undefined;
   try {
-    // 构建请求体，使用火山方舟OpenAI接口模式
-    const requestBody = {
-      model: MODELS.VOLC_ENGINE_IMAGE_MODEL,
-      prompt: `将图片转换为${styleId}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
-      image: imageBase64,
-      size: '2K',
-      sequential_image_generation: 'auto',
-      sequential_image_generation_options: {
-        max_images: 1
-      },
-      stream: false,
-      response_format: 'url',
-      watermark: false
-    };
-
     // 创建超时控制器，使用配置的超时时间
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), API_CONFIG.REQUEST.TIMEOUT);
     
-    const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${VOLC_ENGINE_IMAGES_ENDPOINT}`, {
+    const response = await fetch(`${VOLC_ENGINE_API_BASE_URL}${endpoint}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -411,8 +374,15 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
     }
     return data;
   } catch (error) {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
     if (error instanceof ApiError) {
       throw error;
+    }
+    // 处理超时错误
+    if (error instanceof Error && error.name === 'AbortError') {
+      throw new ApiError(ERROR_CODES.TIMEOUT, '请求超时，请稍后再试');
     }
     throw new ApiError(ERROR_CODES.NETWORK_ERROR, ERROR_MESSAGES.NETWORK_ERROR);
   }
@@ -422,14 +392,29 @@ async function callVolcEngineApiForImageGeneration(imageBase64: string, styleId:
 export async function generateStyledImage(imageBase64: string, styleId: string): Promise<string> {
   try {
     // 从localStorage获取API密钥，直接使用火山方舟API
-    const apiKey = localStorage.getItem(API_CONFIG.STORAGE_KEYS.API_KEY);
+    const apiKey = getStoredApiKey();
     
     if (!apiKey) {
       throw new ApiError(ERROR_CODES.UNAUTHORIZED, ERROR_MESSAGES.UNAUTHORIZED);
     }
 
+    // 构建请求体，使用火山方舟OpenAI接口模式
+    const requestBody = {
+      model: MODELS.VOLC_ENGINE_IMAGE_MODEL,
+      prompt: `将图片转换为${styleId}风格的艺术作品，保持原始图片的主体内容不变，只转换艺术风格。`,
+      image: imageBase64,
+      size: '2K',
+      sequential_image_generation: 'auto',
+      sequential_image_generation_options: {
+        max_images: 1
+      },
+      stream: false,
+      response_format: 'url',
+      watermark: false
+    };
+
     // 调用火山方舟API进行图片生成
-    const result = await callVolcEngineApiForImageGeneration(imageBase64, styleId, apiKey);
+    const result = await callVolcEngineApi(VOLC_ENGINE_IMAGES_ENDPOINT, requestBody, apiKey);
 
     // 从结果中提取生成的图片URL
     if (result.data && Array.isArray(result.data) && result.data.length > 0 && result.data[0].url) {

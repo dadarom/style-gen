@@ -1,5 +1,11 @@
 'use client';
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { 
+  verifyApiKey as verifyApiKeyUtil, 
+  getStoredApiKey, 
+  removeApiKey,
+  ApiKeyStatus
+} from '../../lib/auth';
 
 interface AuthContextType {
   apiKey: string | null;
@@ -8,7 +14,7 @@ interface AuthContextType {
   setIsLoginModalOpen: (open: boolean) => void;
   isApiKeyModalOpen: boolean;
   setIsApiKeyModalOpen: (open: boolean) => void;
-  status: 'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR';
+  status: ApiKeyStatus;
   verifyApiKey: (key: string) => Promise<boolean>;
   logout: () => void;
 }
@@ -32,11 +38,11 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
-  const [status, setStatus] = useState<'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR'>('WAITING');
+  const [status, setStatus] = useState<ApiKeyStatus>('WAITING');
 
   // 从localStorage加载API_KEY
   useEffect(() => {
-    const savedApiKey = localStorage.getItem('stylegen_api_key');
+    const savedApiKey = getStoredApiKey();
     if (savedApiKey) {
       setApiKey(savedApiKey);
       setIsAuthenticated(true);
@@ -47,16 +53,13 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     setStatus('VERIFYING');
     
     try {
-      // 检查是否以sk-或sk:开头
-      if (key.startsWith('sk-') || key.startsWith('sk:')) {
-        // 处理前缀：如果以sk:开头，则去除前缀
+      const success = await verifyApiKeyUtil(key);
+      
+      if (success) {
         const processedKey = key.startsWith('sk:') ? key.slice(3) : key;
-        
         setApiKey(processedKey);
         setIsAuthenticated(true);
         setStatus('SUCCESS');
-        // 保存到localStorage（存储去除前缀后的密钥）
-        localStorage.setItem('stylegen_api_key', processedKey);
         return true;
       } else {
         setStatus('ERROR');
@@ -73,7 +76,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     setApiKey(null);
     setIsAuthenticated(false);
     setStatus('WAITING');
-    localStorage.removeItem('stylegen_api_key');
+    removeApiKey();
   };
 
   const value: AuthContextType = {
