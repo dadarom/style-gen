@@ -1,13 +1,20 @@
 'use client'
 import { Button, Heading, Text } from './atom';
 import { SINGLE_PRICE, ESTIMATED_TIME } from '../data/pricing'
+import { useRouter } from 'next/navigation';
 
 export function Hero() {
+  const router = useRouter();
+  
   const scrollToWorkflow = () => {
     const element = document.getElementById('workflow');
     if (element) {
       element.scrollIntoView({ behavior: 'smooth' });
     }
+  };
+  
+  const navigateToGallery = () => {
+    router.push('/gallery');
   };
 
   return (
@@ -75,6 +82,7 @@ export function Hero() {
           className="w-full"
           uppercase
           tracking="wider"
+          onClick={navigateToGallery}
         >
           查看案例库
         </Button>
