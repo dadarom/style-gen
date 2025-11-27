@@ -7,7 +7,7 @@ import { LogIn, LogOut } from 'lucide-react';
 
 // 临时使用硬编码的导航链接，直到数据导入问题解决
 export function Header() {
-  const { isAuthenticated, logout, setIsLoginModalOpen } = useAuth();
+  const { isAuthenticated, logout, setIsLoginModalOpen, setIsApiKeyModalOpen } = useAuth();
   
   // 更新导航链接为锚点链接，包含演示和关于我们
   const navigationLinks = [
@@ -155,6 +155,7 @@ export function Header() {
             font="mono"
             uppercase
             tracking="wider"
+            onClick={() => setIsApiKeyModalOpen(true)}
           >
             获取 API_KEY
           </Button>

@@ -6,6 +6,8 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoginModalOpen: boolean;
   setIsLoginModalOpen: (open: boolean) => void;
+  isApiKeyModalOpen: boolean;
+  setIsApiKeyModalOpen: (open: boolean) => void;
   status: 'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR';
   verifyApiKey: (key: string) => Promise<boolean>;
   logout: () => void;
@@ -29,6 +31,7 @@ export default function AuthProvider({ children }: AuthProviderProps) {
   const [apiKey, setApiKey] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
+  const [isApiKeyModalOpen, setIsApiKeyModalOpen] = useState(false);
   const [status, setStatus] = useState<'WAITING' | 'VERIFYING' | 'SUCCESS' | 'ERROR'>('WAITING');
 
   // 从localStorage加载API_KEY
@@ -78,6 +81,8 @@ export default function AuthProvider({ children }: AuthProviderProps) {
     isAuthenticated,
     isLoginModalOpen,
     setIsLoginModalOpen,
+    isApiKeyModalOpen,
+    setIsApiKeyModalOpen,
     status,
     verifyApiKey,
     logout
