@@ -4,6 +4,22 @@ import { Button } from '@/components/ui/button';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
+// 构建正确的图片路径，支持本地和GitHub Pages环境
+const getImagePath = (path: string): string => {
+  // 确保路径以/开头
+  const normalizedPath = path.startsWith('/') ? path : `/${path}`;
+  
+  // 检查是否为生产环境（GitHub Pages）
+  const isProduction = process.env.NODE_ENV === 'production';
+  
+  // 生产环境下添加basePath
+  if (isProduction) {
+    return `/style-gen${normalizedPath}`;
+  }
+  
+  return normalizedPath;
+}
+
 // 模拟案例数据 - 配置化管理风格图和用户实际效果图
 const GALLERY_ITEMS = [
   { 
@@ -146,7 +162,7 @@ const ImageCompare = ({ styleImage, userImage, alt }: { styleImage: string; user
     >
       {/* 用户实际效果图 */}
       <img
-        src={userImage}
+        src={getImagePath(userImage)}
         alt={`${alt} - 用户实际效果`}
         className="absolute top-0 left-0 w-full h-full object-cover"
       />
@@ -157,7 +173,7 @@ const ImageCompare = ({ styleImage, userImage, alt }: { styleImage: string; user
         style={{ width: `${position}%` }}
       >
         <img
-          src={styleImage}
+          src={getImagePath(styleImage)}
           alt={`${alt} - 风格图`}
           className="absolute top-0 left-0 w-full h-full object-cover"
         />
