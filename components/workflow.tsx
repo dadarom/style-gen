@@ -11,7 +11,12 @@ import { debug, performanceMonitor, stateTracer } from '../lib/logger';
 
 // 构建正确的图片路径，支持本地和GitHub Pages环境
 const getImagePath = (path: string): string => {
-  // 确保路径以/开头
+  // 如果是远程URL（以http://或https://开头），直接返回
+  if (path.startsWith('http://') || path.startsWith('https://')) {
+    return path;
+  }
+  
+  // 确保本地路径以/开头
   const normalizedPath = path.startsWith('/') ? path : `/${path}`;
   
   // 检查是否为生产环境（GitHub Pages）
@@ -349,7 +354,7 @@ export function Workflow() {
                   </div>
                   {generatedImage ? (
                     <img 
-                      src={generatedImage} 
+                      src={getImagePath(generatedImage)} 
                       alt="生成的图片" 
                       className="w-full aspect-square object-contain bg-background"
                     />
@@ -418,7 +423,7 @@ export function Workflow() {
       // 如果是本地路径或演示模式的图片，直接下载
       if (generatedImage.startsWith('/')) {
         const downloadLink = document.createElement('a');
-        downloadLink.href = generatedImage;
+        downloadLink.href = getImagePath(generatedImage);
         downloadLink.download = filename;
         downloadLink.click();
         return;
