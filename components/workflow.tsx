@@ -116,10 +116,11 @@ export function Workflow() {
     // 开始计时
     generationStartTimeRef.current = Date.now();
     
-    // 模拟进度更新（每600ms更新一次，保持UI等待效果）
+    // 模拟进度更新（每600ms更新一次，15秒内达到95%）
     progressIntervalRef.current = setInterval(() => {
       setProgress(prev => {
-        const newProgress = prev + 1;
+        // 15秒 = 15000ms，每600ms更新一次，共25次，每次更新约4%，15秒内达到95%
+        const newProgress = prev + 4;
         return newProgress > 95 ? 95 : newProgress;
       });
     }, 600);
@@ -284,7 +285,7 @@ export function Workflow() {
                   <p className="font-mono text-xs uppercase tracking-wide">
                     {generationStartTimeRef.current && (
                       <>
-                        已用时: {getElapsedTime()}秒 / 预计用时: 60秒
+                        已用时: {getElapsedTime()}秒 / 预计用时: 15秒
                       </>
                     )}
                   </p>
@@ -315,19 +316,17 @@ export function Workflow() {
               <div className="bg-red-50 border-2 border-red-200 p-6 rounded-md">
                 <p className="text-red-500 font-mono mb-4">错误信息: {error}</p>
                 <p className="text-sm text-muted-foreground mb-4">请检查您的API密钥是否正确，或稍后再试。</p>
-                <Button
-                  data-slot="button"
-                  onClick={() => {
-                    setError(null);
-                    setGeneratedImage(null);
-                    setProgress(0);
-                    setStep(3);
-                    generateImage();
-                  }}
-                  className="inline-flex items-center justify-center gap-2 whitespace-nowrap text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive h-9 px-4 py-2 has-[>svg]:px-3 rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90"
-                >
-                  重试
-                </Button>
+                {step === 4 && (
+                  <Button
+                    onClick={() => {
+                      setError(null);
+                      setStep(3);
+                    }}
+                    className="rounded-none bg-primary text-primary-foreground font-mono uppercase tracking-wider hover:bg-primary/90"
+                  >
+                    重试
+                  </Button>
+                )}
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">

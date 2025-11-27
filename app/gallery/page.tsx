@@ -9,87 +9,87 @@ const GALLERY_ITEMS = [
   { 
     id: 1, 
     title: '油画', 
-    styleImage: '/abstract-oil-painting.png', 
-    userImage: '/cartoon-art.jpg', 
+    styleImage: '/0.jpg', 
+    userImage: '/0b.jpeg', 
     category: '艺术风格' 
   },
   { 
     id: 2, 
     title: '水彩', 
-    styleImage: '/watercolor.jpg', 
-    userImage: '/manga-style.jpg', 
+    styleImage: '/1.jpg', 
+    userImage: '/1b.jpeg', 
     category: '艺术风格' 
   },
   { 
     id: 3, 
     title: '素描', 
-    styleImage: '/pencil-sketch.png', 
-    userImage: '/cinematic-shot.jpg', 
+    styleImage: '/2.jpg', 
+    userImage: '/2b.jpeg', 
     category: '艺术风格' 
   },
   { 
     id: 4, 
     title: '卡通', 
-    styleImage: '/cartoon-art.jpg', 
-    userImage: '/vintage-film.png', 
+    styleImage: '/3.jpg', 
+    userImage: '/3b.jpeg', 
     category: '艺术风格' 
   },
   { 
     id: 5, 
-    title: '漫画', 
-    styleImage: '/manga-style.jpg', 
-    userImage: '/cyberpunk-city.png', 
+    title: '国风水墨', 
+    styleImage: '/2.jpg', 
+    userImage: '/2c.jpeg', 
     category: '艺术风格' 
   },
   { 
     id: 6, 
-    title: '复古胶片', 
-    styleImage: '/vintage-film.png', 
-    userImage: '/instagram-filter.jpg', 
+    title: '抽象画', 
+    styleImage: '/5.jpg', 
+    userImage: '/5b.jpeg', 
     category: '摄影风格' 
   },
   { 
     id: 7, 
-    title: '电影感', 
-    styleImage: '/cinematic-shot.jpg', 
-    userImage: '/product-photography-still-life.png', 
-    category: '摄影风格' 
+    title: '像素艺术', 
+    styleImage: '/6.jpg', 
+    userImage: '/6b.jpeg', 
+    category: '艺术风格' 
   },
   { 
     id: 8, 
     title: '赛博朋克', 
-    styleImage: '/cyberpunk-city.png', 
-    userImage: '/white-background-product.jpg', 
+    styleImage: '/7.jpg', 
+    userImage: '/7b.jpeg', 
     category: '摄影风格' 
   },
   { 
     id: 9, 
-    title: 'INS风', 
-    styleImage: '/instagram-filter.jpg', 
-    userImage: '/chinese-ink-painting.jpg', 
+    title: 'INS风',
+    styleImage: '/8.jpg', 
+    userImage: '/8b.jpeg', 
     category: '摄影风格' 
   },
   { 
     id: 10, 
-    title: '商品精修', 
-    styleImage: '/product-photography-still-life.png', 
-    userImage: '/abstract-oil-painting.png', 
-    category: '电商专用' 
+    title: '艺术抽象', 
+    styleImage: '/9.jpg', 
+    userImage: '/9b.jpeg', 
+    category: '创意风格' 
   },
   { 
     id: 11, 
-    title: '白底图', 
-    styleImage: '/white-background-product.jpg', 
-    userImage: '/watercolor.jpg', 
-    category: '电商专用' 
+    title: '漫画', 
+    styleImage: '/10.jpg', 
+    userImage: '/10b.jpeg', 
+    category: '摄影风格' 
   },
   { 
     id: 12, 
-    title: '国风水墨', 
-    styleImage: '/chinese-ink-painting.jpg', 
-    userImage: '/pencil-sketch.png', 
+    title: '美颜滤镜', 
+    styleImage: '/11.jpg', 
+    userImage: '/11b.jpeg', 
     category: '创意风格' 
-  },
+  }
 ];
 
 // 图片对比组件 - 支持左右滑动对比
